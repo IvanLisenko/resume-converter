@@ -1,4 +1,5 @@
-"""Заготовка общего реестра SQLAlchemy-моделей.
+from sqlalchemy.orm import DeclarativeBase
 
-Конкретный ORM-реестр будет добавлен на этапе подключения базы данных и миграций.
-"""
+
+class Base(DeclarativeBase):
+    pass
