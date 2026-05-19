@@ -94,3 +94,49 @@ RESUME_CONVERTER_ENVIRONMENT="local"
 RESUME_CONVERTER_DATABASE_URL=postgresql+psycopg://resume_converter:resume_converter@postgres:5432/resume_converter
 RESUME_CONVERTER_TEMPLATE_STORAGE_PATH=/data/templates
 ```
+
+## База данных
+
+В локальном Docker-контуре используется PostgreSQL. Параметры подключения с хост-машины:
+
+```text
+Host: localhost
+Port: 5432
+Database: resume_converter
+User: resume_converter
+Password: resume_converter
+```
+
+JDBC URL для IDE:
+
+```text
+jdbc:postgresql://localhost:5432/resume_converter
+```
+
+Проверить доступность PostgreSQL:
+
+```bash
+docker compose exec -T postgres pg_isready -U resume_converter -d resume_converter
+```
+
+## Миграции
+
+Схема базы данных управляется через Alembic. Конфигурация находится в `alembic.ini`, файлы миграций - в `alembic/versions`.
+
+Применить миграции:
+
+```bash
+docker compose exec backend alembic upgrade head
+```
+
+Посмотреть текущую ревизию:
+
+```bash
+docker compose exec backend alembic current
+```
+
+Создать новую миграцию после изменения ORM-моделей:
+
+```bash
+docker compose exec backend alembic revision --autogenerate -m "описание изменения"
+```
