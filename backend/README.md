@@ -39,14 +39,38 @@ backend/
     tests/
   alembic/
   Dockerfile
-  docker-compose.yml
   pyproject.toml
   README.md
 ```
 
 ## Локальный запуск
 
-Приложение можно установить и запустить локально:
+Основной способ запуска для разработки - через Docker Compose из корня репозитория. Compose-файл расположен в корне, чтобы единообразно запускать backend сейчас и frontend на следующих этапах:
+
+```bash
+docker compose up --build
+```
+
+Команда поднимает:
+
+- backend-сервис на FastAPI;
+- PostgreSQL;
+- volume для данных PostgreSQL;
+- volume для постоянного хранения шаблонов партнёров.
+
+Backend будет доступен по адресу:
+
+```text
+http://localhost:8000
+```
+
+Документация FastAPI будет доступна по адресу:
+
+```text
+http://localhost:8000/docs
+```
+
+Также приложение можно установить и запустить локально без Docker:
 
 ```bash
 cd backend
@@ -56,19 +80,17 @@ pip install -e ".[dev]"
 uvicorn app.main:app --reload
 ```
 
-После запуска документация FastAPI будет доступна по адресу:
-
-```text
-http://localhost:8000/docs
-```
-
 ## Настройки
 
 Настройки читаются из переменных окружения с префиксом `RESUME_CONVERTER_`.
+
+Для локального Docker-запуска используется файл `backend/.env`. Пример значений хранится в `backend/.env.example`.
 
 Примеры:
 
 ```bash
 RESUME_CONVERTER_APP_NAME="API конвертера резюме"
 RESUME_CONVERTER_ENVIRONMENT="local"
+RESUME_CONVERTER_DATABASE_URL=postgresql+psycopg://resume_converter:resume_converter@postgres:5432/resume_converter
+RESUME_CONVERTER_TEMPLATE_STORAGE_PATH=/data/templates
 ```
