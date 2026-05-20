@@ -77,6 +77,14 @@ GET /api/v1/health
 GET /api/v1/ready
 ```
 
+Endpoints авторизации:
+
+```text
+POST /api/v1/auth/login
+POST /api/v1/auth/logout
+GET  /api/v1/auth/me
+```
+
 Также приложение можно установить и запустить локально без Docker:
 
 ```bash
@@ -122,6 +130,51 @@ RESUME_CONVERTER_TEMPORARY_GENERATED_PATH=/tmp/resume-converter/generated
 ```
 
 Временные файлы выдаются через контекстные менеджеры и удаляются при выходе из контекста, включая случаи с ошибкой обработки.
+
+## Авторизация
+
+Доступ к защищённым endpoints выполняется через JWT access token.
+
+Вход:
+
+```http
+POST /api/v1/auth/login
+```
+
+Тело запроса:
+
+```json
+{
+  "email": "user@example.com",
+  "password": "password"
+}
+```
+
+Успешный ответ:
+
+```json
+{
+  "access_token": "...",
+  "token_type": "bearer"
+}
+```
+
+Для защищённых запросов токен передаётся в заголовке:
+
+```text
+Authorization: Bearer <access_token>
+```
+
+Роли сотрудников:
+
+```text
+RECRUITER
+ADMIN
+```
+
+Пароли хранятся только в виде хеша. Заблокированные сотрудники (`is_active = false`) не могут войти в приложение.
+
+Срок жизни access token по умолчанию - 12 часов.
 
 ## База данных
 
