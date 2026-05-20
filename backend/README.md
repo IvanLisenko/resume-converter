@@ -85,6 +85,18 @@ POST /api/v1/auth/logout
 GET  /api/v1/auth/me
 ```
 
+Endpoints управления сотрудниками:
+
+```text
+GET    /api/v1/admin/users
+POST   /api/v1/admin/users
+GET    /api/v1/admin/users/{user_id}
+PATCH  /api/v1/admin/users/{user_id}
+PATCH  /api/v1/admin/users/{user_id}/role
+PATCH  /api/v1/admin/users/{user_id}/block
+PATCH  /api/v1/admin/users/{user_id}/unblock
+```
+
 Также приложение можно установить и запустить локально без Docker:
 
 ```bash
@@ -175,6 +187,20 @@ ADMIN
 Пароли хранятся только в виде хеша. Заблокированные сотрудники (`is_active = false`) не могут войти в приложение.
 
 Срок жизни access token по умолчанию - 12 часов.
+
+Создать или обновить первого администратора из переменных окружения:
+
+```bash
+docker compose exec backend python -m app.cli create-first-admin
+```
+
+Для локального запуска используются переменные:
+
+```text
+RESUME_CONVERTER_FIRST_ADMIN_EMAIL
+RESUME_CONVERTER_FIRST_ADMIN_FULL_NAME
+RESUME_CONVERTER_FIRST_ADMIN_PASSWORD
+```
 
 ## База данных
 
