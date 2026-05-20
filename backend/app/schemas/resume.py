@@ -50,7 +50,7 @@ class ResumeData(BaseModel):
     education: list[ResumeEducationItem] = Field(default_factory=list)
     languages: list[ResumeLanguageItem] = Field(default_factory=list)
     experience: list[ResumeExperienceItem] = Field(default_factory=list)
-    extra: dict = Field(default_factory=dict)
+    extra: dict[str, object] = Field(default_factory=dict)
 
 
 class ResumeSource(BaseModel):
