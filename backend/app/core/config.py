@@ -13,6 +13,8 @@ class Settings(BaseSettings):
         "postgresql+psycopg://resume_converter:resume_converter@postgres:5432/resume_converter"
     )
     template_storage_path: str = "/data/templates"
+    temporary_upload_path: str = "/tmp/resume-converter/uploads"
+    temporary_generated_path: str = "/tmp/resume-converter/generated"
     docs_url: str | None = "/docs"
     redoc_url: str | None = "/redoc"
     openapi_url: str | None = "/openapi.json"

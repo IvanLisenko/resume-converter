@@ -100,7 +100,28 @@ RESUME_CONVERTER_APP_NAME="API конвертера резюме"
 RESUME_CONVERTER_ENVIRONMENT="local"
 RESUME_CONVERTER_DATABASE_URL=postgresql+psycopg://resume_converter:resume_converter@postgres:5432/resume_converter
 RESUME_CONVERTER_TEMPLATE_STORAGE_PATH=/data/templates
+RESUME_CONVERTER_TEMPORARY_UPLOAD_PATH=/tmp/resume-converter/uploads
+RESUME_CONVERTER_TEMPORARY_GENERATED_PATH=/tmp/resume-converter/generated
 ```
+
+## Файловое хранение
+
+Постоянно сохраняются только шаблоны партнёров:
+
+```text
+/data/templates/{partner_code}/{template_id}.docx
+```
+
+Исходные резюме, сгенерированные резюме и JSON с персональными данными кандидата не предназначены для постоянного хранения.
+
+Временные файлы создаются в отдельных каталогах:
+
+```text
+/tmp/resume-converter/uploads
+/tmp/resume-converter/generated
+```
+
+Временные файлы выдаются через контекстные менеджеры и удаляются при выходе из контекста, включая случаи с ошибкой обработки.
 
 ## База данных
 
