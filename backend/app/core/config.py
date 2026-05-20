@@ -18,6 +18,9 @@ class Settings(BaseSettings):
     jwt_secret_key: str = Field(min_length=32)
     jwt_algorithm: str = "HS256"
     access_token_expire_minutes: int = 720
+    first_admin_email: str | None = None
+    first_admin_full_name: str | None = None
+    first_admin_password: str | None = None
     docs_url: str | None = "/docs"
     redoc_url: str | None = "/redoc"
     openapi_url: str | None = "/openapi.json"

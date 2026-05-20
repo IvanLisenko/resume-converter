@@ -21,3 +21,12 @@ class UserRepository:
             select(User).where(User.id == user_id),
         )
         return result.scalar_one_or_none()
+
+    async def list_all(self) -> list[User]:
+        result = await self.session.execute(
+            select(User).order_by(User.created_at.desc()),
+        )
+        return list(result.scalars().all())
+
+    def add(self, user: User) -> None:
+        self.session.add(user)
