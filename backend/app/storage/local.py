@@ -40,6 +40,10 @@ class LocalTemplateStorage:
         return self.base_path / safe_partner_code / f"{template_id}.docx"
 
     @staticmethod
+    def delete_file(path: str | Path) -> None:
+        Path(path).unlink(missing_ok=True)
+
+    @staticmethod
     def calculate_checksum(path: str | Path) -> str:
         digest = hashlib.sha256()
         with Path(path).open("rb") as file:
