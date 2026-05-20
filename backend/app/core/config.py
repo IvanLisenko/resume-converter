@@ -9,12 +9,19 @@ class Settings(BaseSettings):
     app_version: str = "0.1.0"
     environment: str = "local"
     api_v1_prefix: str = "/api/v1"
-    database_url: str = "postgresql+psycopg://resume_converter:resume_converter@postgres:5432/resume_converter"
+    database_url: str = (
+        "postgresql+psycopg://resume_converter:resume_converter@postgres:5432/resume_converter"
+    )
     template_storage_path: str = "/data/templates"
     docs_url: str | None = "/docs"
     redoc_url: str | None = "/redoc"
     openapi_url: str | None = "/openapi.json"
-    cors_origins: list[str] = Field(default_factory=list)
+    cors_origins: list[str] = Field(
+        default_factory=lambda: [
+            "http://localhost:3000",
+            "http://localhost:5173",
+        ],
+    )
 
     model_config = SettingsConfigDict(
         env_file=".env",

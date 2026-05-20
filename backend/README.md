@@ -70,6 +70,13 @@ http://localhost:8000
 http://localhost:8000/docs
 ```
 
+Системные endpoints:
+
+```text
+GET /api/v1/health
+GET /api/v1/ready
+```
+
 Также приложение можно установить и запустить локально без Docker:
 
 ```bash
@@ -119,6 +126,13 @@ jdbc:postgresql://localhost:5432/resume_converter
 docker compose exec -T postgres pg_isready -U resume_converter -d resume_converter
 ```
 
+Основные таблицы:
+
+- `users` - сотрудники приложения
+- `partners` - партнёры
+- `partner_templates` - версии шаблонов партнёров
+- `operation_logs` - журнал операций без персональных данных резюме
+
 ## Миграции
 
 Схема базы данных управляется через Alembic. Конфигурация находится в `alembic.ini`, файлы миграций - в `alembic/versions`.
@@ -133,6 +147,12 @@ docker compose exec backend alembic upgrade head
 
 ```bash
 docker compose exec backend alembic current
+```
+
+Проверить, что ORM-модели и миграции синхронизированы:
+
+```bash
+docker compose exec backend alembic check
 ```
 
 Создать новую миграцию после изменения ORM-моделей:
