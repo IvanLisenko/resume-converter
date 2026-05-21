@@ -45,15 +45,29 @@ function App() {
     
     // TODO: заменить на реальный uploadFile из api
     setTimeout(() => {
-      setCandidate({
-        fio: 'Иванов Иван Иванович',
-        position: 'Java Developer',
-        contacts: 'ivan@example.com | +7 999 123-45-67',
-        experience: [],
-        education: 'МГУ, Прикладная математика, 2015',
-        skills: ['Java', 'Spring', 'PostgreSQL'],
-        languages: ['Английский B2', 'Русский родной'],
-      });
+      // В handleUpload внутри setTimeout замени setCandidate на:
+
+setCandidate({
+  fio: 'Иванов Иван Иванович',
+  position: 'Java Developer',
+  contacts: 'ivan@example.com | +7 999 123-45-67',
+  experience: [
+    {
+      title: 'Teamlead Java',
+      project_name: 'Госуслуги',
+      period: 'сентябрь 2017 — н.в.',
+      description: 'Проект по оказанию услуг населению',
+      responsibilities: ['Разработка микросервисов', 'Рефакторинг кода'],
+      achievements: ['Внедрение новых инструментов'],
+      team: '10 backend, 3 frontend',
+      stack_text: 'Java 17, Spring Boot, PostgreSQL',
+      stack: ['Java 17', 'Spring Boot', 'PostgreSQL'],
+    },
+  ],
+  education: 'МГУ, Прикладная математика, 2015',
+  skills: ['Java', 'Spring', 'PostgreSQL'],
+  languages: ['Английский B2', 'Русский родной'],
+});
       setFileLoading(false);
     }, 1500);
   };
