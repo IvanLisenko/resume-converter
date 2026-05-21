@@ -64,6 +64,13 @@ setCandidate({
       stack: ['Java 17', 'Spring Boot', 'PostgreSQL'],
     },
   ],
+  projects: [
+    {
+      name: 'Мобильное приложение Госуслуги',
+      role: 'Team Lead',
+      description: 'Разработка мобильного приложения для iOS и Android',
+    },
+  ],
   education: 'МГУ, Прикладная математика, 2015',
   skills: ['Java', 'Spring', 'PostgreSQL'],
   languages: ['Английский B2', 'Русский родной'],

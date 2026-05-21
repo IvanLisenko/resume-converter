@@ -1,4 +1,4 @@
-import type { CandidateData, Experience } from '../types/candidate';
+import type { CandidateData, Experience, Project } from '../types/candidate';
 
 interface CandidateFormProps {
   data: CandidateData;
@@ -38,6 +38,30 @@ export const CandidateForm = ({ data, onChange }: CandidateFormProps) => {
   const removeExperience = (index: number) => {
     const newExperience = data.experience.filter((_, i) => i !== index);
     updateField('experience', newExperience);
+  };
+
+  // ============= ПРОЕКТЫ =============
+  const addProject = () => {
+    const newProject: Project = {
+      name: '',
+      role: '',
+      description: '',
+    };
+    const currentProjects = data.projects || [];
+    updateField('projects', [...currentProjects, newProject]);
+  };
+
+  const updateProject = (index: number, field: keyof Project, value: string) => {
+    const currentProjects = data.projects || [];
+    const newProjects = [...currentProjects];
+    newProjects[index] = { ...newProjects[index], [field]: value };
+    updateField('projects', newProjects);
+  };
+
+  const removeProject = (index: number) => {
+    const currentProjects = data.projects || [];
+    const newProjects = currentProjects.filter((_, i) => i !== index);
+    updateField('projects', newProjects);
   };
 
   // Навыки: строка через запятую → массив
@@ -235,6 +259,76 @@ export const CandidateForm = ({ data, onChange }: CandidateFormProps) => {
                 type="text"
                 value={exp.stack.join(', ')}
                 onChange={(e) => updateExperience(index, 'stack', e.target.value.split(',').map(s => s.trim()).filter(Boolean))}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* ============= ПРОЕКТЫ ============= */}
+      <div className="border-t pt-4">
+        <div className="flex justify-between items-center mb-3">
+          <h3 className="text-lg font-medium">Проекты</h3>
+          <button
+            type="button"
+            onClick={addProject}
+            className="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700"
+          >
+            + Добавить проект
+          </button>
+        </div>
+
+        {(!data.projects || data.projects.length === 0) && (
+          <p className="text-gray-400 text-sm">Нет добавленных проектов</p>
+        )}
+
+        {data.projects?.map((project, index) => (
+          <div key={project.id ?? index} className="border rounded-lg p-4 mb-4 bg-gray-50">
+            <div className="flex justify-end mb-2">
+              <button
+                type="button"
+                onClick={() => removeProject(index)}
+                className="text-red-600 hover:text-red-800 text-sm"
+              >
+                🗑 Удалить
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Название проекта
+                </label>
+                <input
+                  type="text"
+                  value={project.name}
+                  onChange={(e) => updateProject(index, 'name', e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Роль в проекте
+                </label>
+                <input
+                  type="text"
+                  value={project.role}
+                  onChange={(e) => updateProject(index, 'role', e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+            </div>
+
+            <div className="mt-3">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Описание проекта
+              </label>
+              <textarea
+                value={project.description}
+                onChange={(e) => updateProject(index, 'description', e.target.value)}
+                rows={2}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
