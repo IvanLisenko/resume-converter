@@ -2,6 +2,7 @@ from collections.abc import Iterator
 from contextlib import contextmanager
 from pathlib import Path
 from tempfile import NamedTemporaryFile
+from uuid import uuid4
 
 
 class TemporaryFilePolicy:
@@ -18,6 +19,10 @@ class TemporaryFilePolicy:
     def generated_file(self, suffix: str = ".docx") -> Iterator[Path]:
         with self._temporary_file(self.generated_path, suffix) as path:
             yield path
+
+    def create_generated_file_path(self, suffix: str = ".docx") -> Path:
+        self.generated_path.mkdir(parents=True, exist_ok=True)
+        return self.generated_path / f"{uuid4()}{suffix}"
 
     @contextmanager
     def _temporary_file(self, directory: Path, suffix: str) -> Iterator[Path]:
