@@ -10,6 +10,36 @@ const apiClient = axios.create({
   },
 });
 
+// Перехватчик ошибок
+apiClient.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response) {
+      // Бэкенд ответил с ошибкой
+      const status = error.response.status;
+      const detail = error.response.data?.detail;
+
+      if (status === 401) {
+        throw new Error('Не авторизован. Пожалуйста, войдите снова.');
+      }
+      if (status === 400) {
+        throw new Error(detail || 'Некорректный запрос');
+      }
+      if (status === 404) {
+        throw new Error('Сервис не найден');
+      }
+      if (status === 502) {
+        throw new Error('Бэкенд недоступен. Попробуйте позже.');
+      }
+      throw new Error(detail || 'Ошибка сервера');
+    }
+    if (error.request) {
+      // Запрос ушёл, но ответа нет
+      throw new Error('Нет соединения с сервером. Проверьте сеть.');
+    }
+    throw new Error(error.message || 'Неизвестная ошибка');
+  }
+);
 // ============= АВТОРИЗАЦИЯ =============
 
 const USE_MOCK_AUTH = true;  // Временно true для тестирования

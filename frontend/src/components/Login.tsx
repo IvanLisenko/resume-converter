@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { login } from '../services/api';
+import { ErrorAlert } from './ErrorAlert';
 
 interface LoginProps {
   onLogin: (token: string) => void;
@@ -21,7 +22,8 @@ export const Login = ({ onLogin }: LoginProps) => {
       localStorage.setItem('token', response.access_token);
       onLogin(response.access_token);
     } catch (err) {
-      setError('Неверный email или пароль');
+      const message = err instanceof Error ? err.message : 'Неверный email или пароль';
+      setError(message);
     } finally {
       setLoading(false);
     }
@@ -60,16 +62,12 @@ export const Login = ({ onLogin }: LoginProps) => {
             />
           </div>
           
-          {error && (
-            <div className="mb-4 p-2 bg-red-100 text-red-700 text-sm rounded">
-              {error}
-            </div>
-          )}
+          {error && <ErrorAlert message={error} onClose={() => setError('')} />}
           
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 disabled:opacity-50"
+            className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 disabled:opacity-50 mt-4"
           >
             {loading ? 'Вход...' : 'Войти'}
           </button>

@@ -3,6 +3,7 @@ import { FileUpload } from './FileUpload';
 import { CandidateForm } from './CandidateForm';
 import { PartnerSelect } from './PartnerSelect';
 import { GenerateButton } from './GenerateButton';
+import { ErrorAlert } from './ErrorAlert';
 import type { CandidateData } from '../types/candidate';
 
 interface MainPageProps {
@@ -15,11 +16,11 @@ export const MainPage = ({ onLogout }: MainPageProps) => {
   const [selectedPartner, setSelectedPartner] = useState<string>('');
   const [error, setError] = useState<string | null>(null);
 
-  // Временный мок для загрузки файла (пока нет бэкенда)
   const handleUpload = async (file: File) => {
     setFileLoading(true);
     setError(null);
     
+    // TODO: заменить на реальный uploadFile из api
     setTimeout(() => {
       setCandidate({
         fio: 'Иванов Иван Иванович',
@@ -30,33 +31,35 @@ export const MainPage = ({ onLogout }: MainPageProps) => {
             title: 'Teamlead Java',
             project_name: 'Госуслуги',
             period: 'сентябрь 2017 — н.в.',
-            description: 'Проект по оказанию услуг населению в электронном виде',
-            responsibilities: [
-              'Разработка реактивных серверных микросервисов',
-              'Реализация асинхронных/многопоточных моделей',
-              'Рефакторинг устаревшего кода'
-            ],
-            achievements: ['Успешное внедрение новых инструментов'],
-            team: '10 backend, 3 frontend, 5 тестировщиков',
-            stack_text: 'Java 17, Spring Boot, PostgreSQL, Docker',
-            stack: ['Java 17', 'Spring Boot', 'PostgreSQL', 'Docker']
+            description: 'Проект по оказанию услуг населению',
+            responsibilities: ['Разработка микросервисов', 'Рефакторинг кода'],
+            achievements: ['Внедрение новых инструментов'],
+            team: '10 backend, 3 frontend',
+            stack_text: 'Java 17, Spring Boot, PostgreSQL',
+            stack: ['Java 17', 'Spring Boot', 'PostgreSQL'],
           },
         ],
         projects: [
           {
-            name: 'Мобильное приложение Госуслуги',
+            name: 'Мобильное приложение',
             role: 'Team Lead',
-            description: 'Разработка мобильного приложения для iOS и Android'
+            description: 'Разработка мобильного приложения',
           },
         ],
         education: 'МГУ, Прикладная математика, 2015',
-        skills: ['Java', 'Spring', 'PostgreSQL', 'Docker'],
+        skills: ['Java', 'Spring', 'PostgreSQL'],
         languages: ['Английский B2', 'Русский родной'],
-        location: 'Москва, Россия',
-        ready_to_work: '2 недели'
       });
       setFileLoading(false);
     }, 1500);
+  };
+
+  const handleError = (errorMessage: string) => {
+    setError(errorMessage);
+  };
+
+  const clearError = () => {
+    setError(null);
   };
 
   return (
@@ -77,32 +80,28 @@ export const MainPage = ({ onLogout }: MainPageProps) => {
         <FileUpload onUpload={handleUpload} isLoading={fileLoading} />
 
         {/* Ошибки */}
-        {error && (
-          <div className="mt-4 p-3 bg-red-100 text-red-700 rounded-md">
-            ⚠️ {error}
-          </div>
-        )}
+        {error && <ErrorAlert message={error} onClose={clearError} />}
 
-        {/* Форма редактирования (показывается после загрузки файла) */}
+        {/* Форма редактирования */}
         {candidate && (
           <div className="mt-8">
             <CandidateForm data={candidate} onChange={setCandidate} />
             
-            {/* Выбор партнёра и кнопка генерации */}
             <div className="mt-8 pt-6 border-t">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-end">
                 <PartnerSelect onSelect={setSelectedPartner} />
                 <GenerateButton
                   candidate={candidate}
                   partnerId={selectedPartner}
-                  onError={setError}
+                  onError={handleError}
+                  onSuccess={clearError}
                 />
               </div>
             </div>
           </div>
         )}
 
-        {/* Подсказка если нет файла */}
+        {/* Подсказка */}
         {!candidate && !fileLoading && (
           <div className="mt-8 text-center text-gray-400">
             <p>Загрузите резюме в формате .docx</p>
