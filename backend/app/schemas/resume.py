@@ -32,6 +32,8 @@ class ResumeLanguageItem(BaseModel):
 
 class ResumeExperienceItem(BaseModel):
     title: str
+    role: str | None = None
+    level: str | None = None
     project_name: str | None = None
     period: str | None = None
     description: str | None = None

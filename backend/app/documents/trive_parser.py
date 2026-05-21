@@ -31,6 +31,10 @@ EXPERIENCE_MARKERS = {
     "Команда проекта": "team",
     "Стек": "stack",
 }
+LEVEL_PATTERN = re.compile(
+    r"\b(senior\+?|middle\+?|junior\+?|lead|team\s*lead|tech\s*lead|principal|architect)\b",
+    flags=re.IGNORECASE,
+)
 
 
 @dataclass(frozen=True)
@@ -46,6 +50,8 @@ class TriveResumeParser:
         warnings = self._build_format_warnings(sections)
 
         candidate = self._parse_candidate(sections["header"], warnings)
+        experience = self._parse_experience(sections["experience"])
+        self._enrich_candidate_from_experience(candidate, experience)
         resume = ResumeData(
             candidate=candidate,
             contacts=ResumeContacts(),
@@ -53,7 +59,7 @@ class TriveResumeParser:
             summary=self._parse_summary(sections["summary"]),
             education=self._parse_education(sections["education"]),
             languages=self._parse_languages(sections["languages"]),
-            experience=self._parse_experience(sections["experience"]),
+            experience=experience,
         )
         self._append_data_warnings(resume, warnings)
 
@@ -189,8 +195,11 @@ class TriveResumeParser:
     def _parse_experience_block(self, lines: list[str]) -> ResumeExperienceItem:
         title = lines[0]
         period = lines[1] if len(lines) > 1 and self._looks_like_period(lines[1]) else None
+        role = self._extract_role(title)
         item = ResumeExperienceItem(
             title=title,
+            role=role,
+            level=self._extract_level(role or title),
             project_name=self._extract_project_name(title),
             period=period,
         )
@@ -296,6 +305,37 @@ class TriveResumeParser:
     def _extract_project_name(title: str) -> str | None:
         match = re.search(r"на проекте\s+(.+)$", title, flags=re.IGNORECASE)
         return match.group(1).strip() if match else title
+
+    @staticmethod
+    def _extract_role(title: str) -> str | None:
+        role = re.split(r"\s+на проекте\s+", title, maxsplit=1, flags=re.IGNORECASE)[0].strip()
+        return role or None
+
+    @staticmethod
+    def _extract_level(value: str) -> str | None:
+        match = LEVEL_PATTERN.search(value)
+        if not match:
+            return None
+        level = re.sub(r"\s+", " ", match.group(1)).strip()
+        aliases = {
+            "team lead": "Team Lead",
+            "tech lead": "Tech Lead",
+        }
+        return aliases.get(level.lower(), level[:1].upper() + level[1:])
+
+    @staticmethod
+    def _enrich_candidate_from_experience(
+        candidate: ResumeCandidate,
+        experience: list[ResumeExperienceItem],
+    ) -> None:
+        if not experience:
+            return
+
+        current_experience = experience[0]
+        if not candidate.level and current_experience.level:
+            candidate.level = current_experience.level
+        if not candidate.position and current_experience.role:
+            candidate.position = current_experience.role
 
     @staticmethod
     def _join_text(current: str | None, value: str) -> str:

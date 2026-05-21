@@ -18,14 +18,23 @@ def test_template_validator_accepts_allowed_variables_and_loop_items(tmp_path):
         path,
         [
             "{{ candidate.full_name }}",
+            "{%p if candidate.level_line %}",
+            "{{ candidate.level_line }}",
+            "{%p endif %}",
+            "{%p if has_skills %}",
+            "{{ skills_heading }}",
             "{{ skills.primary_text }}",
+            "{%p endif %}",
             "{%p for project in experience %}",
-            "{{ project.project_name }}",
+            "{{ project.project_heading }}",
             "{{ project.stack_text }}",
+            "{%p if project.has_achievements %}",
+            "{{ project.achievements_heading }}",
             "{%p for task in project.responsibilities %}",
             "{{ task }}",
             "{%p endfor %}",
             "{%p endfor %}",
+            "{%p endif %}",
         ],
     )
 
@@ -34,11 +43,16 @@ def test_template_validator_accepts_allowed_variables_and_loop_items(tmp_path):
     assert schema["version"] == "1.0"
     assert schema["variables"] == [
         "candidate.full_name",
+        "candidate.level_line",
         "experience",
-        "experience.project_name",
+        "experience.achievements_heading",
+        "experience.has_achievements",
+        "experience.project_heading",
         "experience.responsibilities",
         "experience.stack_text",
+        "has_skills",
         "skills.primary_text",
+        "skills_heading",
     ]
 
 

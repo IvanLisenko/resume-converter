@@ -52,6 +52,7 @@ def test_trive_parser_extracts_main_sections(tmp_path):
     assert resume.candidate.full_name == "Иван Иванов Иванович"
     assert resume.candidate.position == "Java Developer"
     assert resume.candidate.total_experience == "5 лет"
+    assert resume.candidate.level == "Senior"
     assert resume.skills.primary == ["Java", "Spring", "PostgreSQL"]
     assert resume.skills.detailed == ["REST API контрактное API для внешних сервисов", "Docker"]
     assert resume.summary == "Опытный Java-разработчик."
@@ -59,6 +60,8 @@ def test_trive_parser_extracts_main_sections(tmp_path):
     assert resume.languages[1].name == "Английский"
     assert resume.languages[1].level == "B2"
     assert resume.experience[0].project_name == "в сфере финтех"
+    assert resume.experience[0].role == "Senior Java Developer"
+    assert resume.experience[0].level == "Senior"
     assert resume.experience[0].description == "Платформа обработки платежей"
     assert resume.experience[0].responsibilities == [
         "Разработка backend-сервисов",
