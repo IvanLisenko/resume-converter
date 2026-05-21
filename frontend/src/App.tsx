@@ -4,6 +4,7 @@ import { ProtectedRoute } from './components/ProtectedRoute';
 import { FileUpload } from './components/FileUpload';
 import { CandidateForm } from './components/CandidateForm';
 import { PartnerSelect } from './components/PartnerSelect';
+import { GenerateButton } from './components/GenerateButton';
 import { getCurrentUser } from './services/api';
 import type { CandidateData } from './types/candidate';
 
@@ -15,7 +16,6 @@ function App() {
   const [selectedPartner, setSelectedPartner] = useState<string>('');
   const [error, setError] = useState<string | null>(null);
 
-  // Проверка токена при загрузке
   useEffect(() => {
     const storedToken = localStorage.getItem('token');
     if (storedToken) {
@@ -43,12 +43,11 @@ function App() {
     setError(null);
   };
 
-  // Временный мок для загрузки файла (пока нет бэкенда)
+  // Временный мок для загрузки файла
   const handleUpload = async (file: File) => {
     setFileLoading(true);
     setError(null);
     
-    // Имитация задержки и парсинга
     setTimeout(() => {
       setCandidate({
         fio: 'Иванов Иван Иванович',
@@ -59,49 +58,26 @@ function App() {
             title: 'Teamlead Java',
             project_name: 'Госуслуги',
             period: 'сентябрь 2017 — н.в.',
-            description: 'Проект по оказанию услуг населению в электронном виде',
-            responsibilities: [
-              'Разработка реактивных серверных микросервисов',
-              'Реализация асинхронных/многопоточных моделей',
-              'Рефакторинг устаревшего кода'
-            ],
-            achievements: ['Успешное внедрение новых инструментов'],
-            team: '10 backend, 3 frontend, 5 тестировщиков',
-            stack_text: 'Java 17, Spring Boot, PostgreSQL, Docker',
-            stack: ['Java 17', 'Spring Boot', 'PostgreSQL', 'Docker']
+            description: 'Проект по оказанию услуг населению',
+            responsibilities: ['Разработка микросервисов', 'Рефакторинг кода'],
+            achievements: ['Внедрение новых инструментов'],
+            team: '10 backend, 3 frontend',
+            stack_text: 'Java 17, Spring Boot, PostgreSQL',
+            stack: ['Java 17', 'Spring Boot', 'PostgreSQL'],
           },
-          {
-            title: 'Java Developer',
-            project_name: 'МТС',
-            period: 'сентябрь 2015 — июнь 2017',
-            description: 'Проект по ведению отчётности для организаций',
-            responsibilities: [
-              'Разработка новых функций',
-              'Поддержка существующего кода'
-            ],
-            achievements: ['Оптимизация производительности'],
-            team: '5 backend, 2 frontend, 2 тестировщика',
-            stack_text: 'Java 11, Spring, Hibernate, PostgreSQL',
-            stack: ['Java 11', 'Spring', 'Hibernate', 'PostgreSQL']
-          }
         ],
         projects: [
           {
             name: 'Мобильное приложение Госуслуги',
             role: 'Team Lead',
-            description: 'Разработка мобильного приложения для iOS и Android'
+            description: 'Разработка мобильного приложения',
           },
-          {
-            name: 'Автоматизация отчётности',
-            role: 'Java Developer',
-            description: 'Внедрение системы автоматической генерации отчётов'
-          }
         ],
         education: 'МГУ, Прикладная математика, 2015',
-        skills: ['Java', 'Spring', 'PostgreSQL', 'Docker', 'Kubernetes'],
+        skills: ['Java', 'Spring', 'PostgreSQL'],
         languages: ['Английский B2', 'Русский родной'],
-        location: 'Москва, Россия',
-        ready_to_work: '2 недели'
+        location: 'Москва',
+        ready_to_work: '2 недели',
       });
       setFileLoading(false);
     }, 1500);
@@ -144,25 +120,26 @@ function App() {
             </div>
           )}
 
-          {/* Форма редактирования (показывается после загрузки файла) */}
+          {/* Форма редактирования */}
           {candidate && (
             <div className="mt-8">
               <CandidateForm data={candidate} onChange={setCandidate} />
               
-              {/* Выбор партнёра */}
+              {/* Выбор партнёра и кнопка генерации */}
               <div className="mt-8 pt-6 border-t">
-                <PartnerSelect onSelect={setSelectedPartner} />
-                
-                {selectedPartner && (
-                  <p className="mt-2 text-sm text-green-600">
-                    ✓ Выбран партнёр ID: {selectedPartner}
-                  </p>
-                )}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-end">
+                  <PartnerSelect onSelect={setSelectedPartner} />
+                  <GenerateButton
+                    candidate={candidate}
+                    partnerId={selectedPartner}
+                    onError={setError}
+                  />
+                </div>
               </div>
             </div>
           )}
 
-          {/* Подсказка если нет файла */}
+          {/* Подсказка */}
           {!candidate && !fileLoading && (
             <div className="mt-8 text-center text-gray-400">
               <p>Загрузите резюме в формате .docx</p>
