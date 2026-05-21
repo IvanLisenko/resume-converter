@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Login } from './components/Login';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { FileUpload } from './components/FileUpload';
+import { CandidateForm } from './components/CandidateForm';
 import { getCurrentUser } from './services/api';
 import type { CandidateData } from './types/candidate';
 
@@ -42,16 +43,16 @@ function App() {
     setFileLoading(true);
     setError(null);
     
-    // Временный мок (пока нет реального uploadFile)
+    // TODO: заменить на реальный uploadFile из api
     setTimeout(() => {
       setCandidate({
         fio: 'Иванов Иван Иванович',
         position: 'Java Developer',
-        contacts: 'test@example.com',
+        contacts: 'ivan@example.com | +7 999 123-45-67',
         experience: [],
-        education: '',
-        skills: [],
-        languages: [],
+        education: 'МГУ, Прикладная математика, 2015',
+        skills: ['Java', 'Spring', 'PostgreSQL'],
+        languages: ['Английский B2', 'Русский родной'],
       });
       setFileLoading(false);
     }, 1500);
@@ -91,10 +92,8 @@ function App() {
         )}
 
         {candidate && (
-          <div className="mt-6 p-4 bg-green-50 border border-green-200 rounded">
-            <h2 className="font-semibold mb-2">Файл загружен!</h2>
-            <p>ФИО: {candidate.fio || '—'}</p>
-            <p>Должность: {candidate.position || '—'}</p>
+          <div className="mt-6">
+            <CandidateForm data={candidate} onChange={setCandidate} />
           </div>
         )}
       </div>
