@@ -110,6 +110,12 @@ GET /api/v1/partners
 GET /api/v1/partners/{partner_id}
 ```
 
+Endpoint справочника шаблонных переменных:
+
+```text
+GET /api/v1/template-variables
+```
+
 Endpoints администрирования партнёров и шаблонов:
 
 ```text
@@ -290,12 +296,71 @@ multipart/form-data
 file: template.docx
 ```
 
-При загрузке backend проверяет расширение файла, открываемость `.docx`, сохраняет файл в постоянное хранилище и создаёт запись версии шаблона в базе данных. Новый загруженный шаблон становится активным, предыдущие версии этого партнёра деактивируются.
+При загрузке backend проверяет расширение файла, открываемость `.docx`, наличие шаблонных переменных и соответствие переменных разрешённому справочнику. После успешной проверки файл сохраняется в постоянное хранилище, а в базе создаётся запись версии шаблона. Новый загруженный шаблон становится активным, предыдущие версии этого партнёра деактивируются.
 
 Файл сохраняется по схеме:
 
 ```text
 /data/templates/{partner_code}/{template_id}.docx
+```
+
+В записи шаблона сохраняется `variables_schema`: версия справочника, список переменных, найденных в конкретном `.docx`, и полный список доступных переменных для администратора.
+
+Если шаблон содержит неизвестное поле, backend возвращает ошибку:
+
+```json
+{
+  "code": "template.unknown_variable",
+  "message": "Шаблон содержит неизвестное поле: candidate.birth_date",
+  "details": {
+    "unknown_variables": ["candidate.birth_date"]
+  }
+}
+```
+
+Разрешённые переменные можно получить через:
+
+```http
+GET /api/v1/template-variables
+```
+
+Основные переменные:
+
+```text
+candidate.full_name
+candidate.position
+candidate.level
+candidate.location
+candidate.available_from
+candidate.total_experience
+summary
+skills.primary
+skills.primary_text
+skills.detailed
+skills.detailed_text
+education
+languages
+experience
+checklist_text
+employment.period
+```
+
+Для циклов в Word-шаблоне поддерживаются поля элементов:
+
+```jinja
+{%p for item in education %}
+{{ item.university }}
+{{ item.program }}
+{{ item.start_year }}
+{{ item.end_year }}
+{%p endfor %}
+
+{%p for project in experience %}
+{{ project.project_name }}
+{{ project.description }}
+{{ project.period }}
+{{ project.stack_text }}
+{%p endfor %}
 ```
 
 ## База данных

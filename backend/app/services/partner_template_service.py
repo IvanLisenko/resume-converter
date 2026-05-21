@@ -48,6 +48,7 @@ class PartnerTemplateService:
         with temporary_policy.upload_file(suffix=".docx") as temporary_path:
             await self._save_upload_to_temporary_file(file, temporary_path)
             self.validator.validate_docx(temporary_path)
+            variables_schema = self.validator.validate_template_variables(temporary_path)
 
             template_storage = get_template_storage()
             stored_template = template_storage.save_template(
@@ -65,7 +66,7 @@ class PartnerTemplateService:
                     original_filename=file.filename or "template.docx",
                     storage_path=str(stored_template.path),
                     checksum=stored_template.checksum,
-                    variables_schema={},
+                    variables_schema=variables_schema,
                     is_active=True,
                     uploaded_by=uploaded_by,
                 )
