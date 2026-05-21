@@ -12,12 +12,34 @@ const apiClient = axios.create({
 
 // ============= АВТОРИЗАЦИЯ =============
 
+const USE_MOCK_AUTH = true;  // Временно true для тестирования
+
 export const login = async (email: string, password: string) => {
+  if (USE_MOCK_AUTH) {
+    await new Promise(resolve => setTimeout(resolve, 500));
+    
+    if (email === 'test@example.com' && password === '123456') {
+      return { access_token: 'mock-token-123' };
+    }
+    throw new Error('Неверный email или пароль');
+  }
+  
   const response = await apiClient.post('/auth/login', { email, password });
   return response.data;
 };
 
 export const getCurrentUser = async () => {
+  if (USE_MOCK_AUTH) {
+    await new Promise(resolve => setTimeout(resolve, 300));
+    return { 
+      id: '1', 
+      email: 'test@example.com', 
+      full_name: 'Тестовый Пользователь', 
+      role: 'recruiter', 
+      is_active: true 
+    };
+  }
+  
   const response = await apiClient.get('/auth/me');
   return response.data;
 };
