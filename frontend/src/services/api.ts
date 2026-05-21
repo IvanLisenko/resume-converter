@@ -65,7 +65,17 @@ export const uploadFile = async (file: File): Promise<CandidateData> => {
 
 // ============= ПАРТНЁРЫ =============
 
+const USE_MOCK = true;
+
 export const getPartners = async (): Promise<Partner[]> => {
+  if (USE_MOCK) {
+    await new Promise(resolve => setTimeout(resolve, 500));
+    return [
+      { id: 1, name: 'ООО Партнёр 1' },      // id: number
+      { id: 2, name: 'ЗАО Партнёр 2' },
+      { id: 3, name: 'ИП Партнёр 3' },
+    ];
+  }
   const response = await apiClient.get<Partner[]>('/partners');
   return response.data;
 };
