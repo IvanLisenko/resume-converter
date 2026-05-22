@@ -61,9 +61,13 @@ export const Login = ({ onLogin }: LoginProps) => {
 
           {error && <ErrorAlert message={error} onClose={() => setError('')} />}
 
-          <button type="submit" disabled={loading} className="login-button">
-            {loading ? 'Вход...' : 'Войти'}
-          </button>
+         <button
+  type="submit"
+  disabled={loading}
+  className="login-button"
+>
+  {loading ? 'Вход...' : 'Войти'}
+</button>
         </form>
       </div>
     </div>

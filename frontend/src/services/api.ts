@@ -10,123 +10,91 @@ const apiClient = axios.create({
   },
 });
 
-// Перехватчик ошибок
+// ================= TOKEN =================
+apiClient.interceptors.request.use((config) => {
+  const token = localStorage.getItem('token');
+
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+
+  return config;
+});
+
+// ================= ERROR HANDLING =================
 apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response) {
-      // Бэкенд ответил с ошибкой
       const status = error.response.status;
       const detail = error.response.data?.detail;
 
-      if (status === 401) {
-        throw new Error('Не авторизован. Пожалуйста, войдите снова.');
-      }
-      if (status === 400) {
-        throw new Error(detail || 'Некорректный запрос');
-      }
-      if (status === 404) {
-        throw new Error('Сервис не найден');
-      }
-      if (status === 502) {
-        throw new Error('Бэкенд недоступен. Попробуйте позже.');
-      }
+      if (status === 401) throw new Error('Не авторизован. Войдите снова.');
+      if (status === 400) throw new Error(detail || 'Некорректный запрос');
+      if (status === 404) throw new Error('Сервис не найден');
+      if (status === 502) throw new Error('Бэкенд недоступен');
       throw new Error(detail || 'Ошибка сервера');
     }
+
     if (error.request) {
-      // Запрос ушёл, но ответа нет
-      throw new Error('Нет соединения с сервером. Проверьте сеть.');
+      throw new Error('Нет соединения с сервером');
     }
+
     throw new Error(error.message || 'Неизвестная ошибка');
   }
 );
-// ============= АВТОРИЗАЦИЯ =============
 
-const USE_MOCK_AUTH = true;  // Временно true для тестирования
-
+// ================= AUTH =================
 export const login = async (email: string, password: string) => {
-  if (USE_MOCK_AUTH) {
-    await new Promise(resolve => setTimeout(resolve, 500));
-    
-    if (email === 'test@example.com' && password === '123456') {
-      return { access_token: 'mock-token-123' };
-    }
-    throw new Error('Неверный email или пароль');
-  }
-  
-  const response = await apiClient.post('/auth/login', { email, password });
-  return response.data;
+  const response = await apiClient.post('/auth/login', {
+    email,
+    password,
+  });
+
+  return response.data; // { access_token, token_type }
 };
 
 export const getCurrentUser = async () => {
-  if (USE_MOCK_AUTH) {
-    await new Promise(resolve => setTimeout(resolve, 300));
-    return { 
-      id: '1', 
-      email: 'test@example.com', 
-      full_name: 'Тестовый Пользователь', 
-      role: 'recruiter', 
-      is_active: true 
-    };
-  }
-  
   const response = await apiClient.get('/auth/me');
   return response.data;
 };
 
-// ============= РЕЗЮМЕ =============
-
+// ================= RESUME =================
 export const uploadFile = async (file: File): Promise<CandidateData> => {
   const formData = new FormData();
   formData.append('file', file);
 
-  const response = await apiClient.post<ParseResponse>('/resumes/extract', formData, {
-    headers: {
-      'Content-Type': 'multipart/form-data',
-    },
-  });
-
-  if (response.data.warnings?.length) {
-    console.warn('Парсинг с предупреждениями:', response.data.warnings);
-  }
+  const response = await apiClient.post<ParseResponse>(
+    '/resumes/extract',
+    formData
+  );
 
   return response.data.data;
 };
 
-// ============= ПАРТНЁРЫ =============
-
-const USE_MOCK = true;
-
+// ================= PARTNERS =================
 export const getPartners = async (): Promise<Partner[]> => {
-  if (USE_MOCK) {
-    await new Promise(resolve => setTimeout(resolve, 500));
-    return [
-      { id: 1, name: 'ООО Партнёр 1' },      // id: number
-      { id: 2, name: 'ЗАО Партнёр 2' },
-      { id: 3, name: 'ИП Партнёр 3' },
-    ];
-  }
-  const response = await apiClient.get<Partner[]>('/partners');
+  const response = await apiClient.get('/partners');
   return response.data;
 };
 
-// ============= ГЕНЕРАЦИЯ (ПОТОМ) =============
-
-// TODO: заменить мок на реальный запрос, когда появится эндпоинт
+// ================= GENERATION =================
 export const generateResume = async (
   candidate: CandidateData,
   partnerId: string
 ): Promise<Blob> => {
-  console.log('Генерация для партнёра:', partnerId, candidate);
-  
-  // Мок-заглушка
-  await new Promise(resolve => setTimeout(resolve, 1000));
-  
-  const mockContent = `ФИО: ${candidate.fio}\nДолжность: ${candidate.position}\nПартнёр ID: ${partnerId}`;
-  return new Blob([mockContent], { 
-    type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' 
-  });
+  const response = await apiClient.post(
+    '/resumes/generate',
+    {
+      candidate,
+      partner_id: partnerId,
+    },
+    {
+      responseType: 'blob',
+    }
+  );
 
+  return response.data;
 };
 
 export default {

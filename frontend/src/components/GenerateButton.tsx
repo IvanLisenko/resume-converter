@@ -10,11 +10,16 @@ interface GenerateButtonProps {
   onError?: (error: string) => void;
 }
 
-export const GenerateButton = ({ candidate, partnerId, onSuccess, onError }: GenerateButtonProps) => {
+export const GenerateButton = ({
+  candidate,
+  partnerId,
+  onSuccess,
+  onError
+}: GenerateButtonProps) => {
   const [generating, setGenerating] = useState(false);
 
   const handleGenerate = async () => {
-    if (!partnerId) {
+    if (!partnerId || partnerId === 'undefined' || partnerId === 'null') {
       onError?.('Выберите партнёра');
       return;
     }
@@ -23,20 +28,25 @@ export const GenerateButton = ({ candidate, partnerId, onSuccess, onError }: Gen
 
     try {
       const blob = await generateResume(candidate, partnerId);
-      
+
+      const safeFio =
+        candidate.fio?.trim()?.replace(/\s+/g, '_') || 'candidate';
+
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
+
       a.href = url;
-      a.download = `resume_${candidate.fio.replace(/\s/g, '_')}_${partnerId}.docx`;
+      a.download = `resume_${safeFio}_${partnerId}.docx`;
+
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
+
       URL.revokeObjectURL(url);
-      
+
       onSuccess?.();
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Ошибка при генерации';
-      onError?.(errorMessage);
+      onError?.(err instanceof Error ? err.message : 'Ошибка при генерации');
     } finally {
       setGenerating(false);
     }
