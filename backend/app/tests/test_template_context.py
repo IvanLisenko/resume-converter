@@ -13,6 +13,7 @@ def test_template_context_mapper_builds_docxtpl_context():
         candidate=ResumeCandidate(
             full_name="Иван Иванов Иванович",
             position="Java Developer",
+            total_experience="5 лет",
             level="Senior",
             location="Москва",
             available_from="с 01.06.2026",
@@ -38,7 +39,15 @@ def test_template_context_mapper_builds_docxtpl_context():
                 stack=["Java", "Spring Boot"],
             )
         ],
-        extra={"checklist_text": "Проверено рекрутером"},
+        extra={
+            "checklist_items": [
+                {
+                    "requirement": "Java",
+                    "status": "соответствует",
+                    "comment": "Коммерческий опыт",
+                }
+            ]
+        },
     )
 
     context = TemplateContextMapper().map_resume(resume)
@@ -46,6 +55,7 @@ def test_template_context_mapper_builds_docxtpl_context():
     assert context["candidate"]["full_name"] == "Иван Иванов Иванович"
     assert context["candidate"]["role_title"] == "Senior Java Developer"
     assert context["candidate"]["level_line"] == "Уровень: Senior"
+    assert context["candidate"]["total_experience_line"] == "Опыт работы: 5 лет"
     assert context["candidate"]["available_from_line"] == "Готов(-а) выйти на проект с 01.06.2026"
     assert context["has_summary"] is True
     assert context["summary_heading"] == "Сопроводительное письмо (О себе, знания и навыки)"
@@ -57,6 +67,9 @@ def test_template_context_mapper_builds_docxtpl_context():
     assert context["skills_heading"] == "Ключевые навыки (Основной стек)"
     assert context["skills"]["primary_text"] == "Java, Spring"
     assert context["skills"]["detailed_text"] == "REST API\nPostgreSQL"
+    assert context["skills"]["programming_languages_text"] == "Java"
+    assert context["skills"]["tools_text"] == "Spring"
+    assert context["skills"]["databases_text"] == ""
     assert context["has_education"] is True
     assert context["education_heading"] == "Образование"
     assert context["education"][0]["university"] == (
@@ -74,7 +87,13 @@ def test_template_context_mapper_builds_docxtpl_context():
     assert context["experience"][0]["achievements_heading"] == ""
     assert context["experience"][0]["has_team"] is False
     assert context["experience"][0]["team_line"] == ""
-    assert context["checklist_text"] == "Проверено рекрутером"
+    assert context["checklist_items"] == [
+        {
+            "requirement": "Java",
+            "status": "соответствует",
+            "comment": "Коммерческий опыт",
+        }
+    ]
     assert context["has_checklist"] is True
     assert context["checklist_heading"] == "Чек-лист"
     assert context["employment"]["period"] == "с 01.06.2026"
@@ -101,12 +120,14 @@ def test_template_context_mapper_does_not_expose_none_values():
     assert context["candidate"]["level_line"] == ""
     assert context["candidate"]["location_line"] == ""
     assert context["candidate"]["available_from_line"] == ""
+    assert context["candidate"]["total_experience_line"] == ""
     assert context["candidate"]["location"] == ""
     assert context["candidate"]["available_from"] == ""
     assert context["has_summary"] is False
     assert context["summary_heading"] == ""
     assert context["summary_paragraphs"] == []
     assert context["has_checklist"] is False
+    assert context["checklist_items"] == []
     assert context["checklist_heading"] == ""
     assert context["has_skills"] is False
     assert context["skills_heading"] == ""
