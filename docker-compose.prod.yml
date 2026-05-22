@@ -1,0 +1,60 @@
+services:
+  backend:
+    build:
+      context: ./backend
+      target: production
+    env_file:
+      - ./backend/.env.production
+    restart: unless-stopped
+    volumes:
+      - partner_templates:/data/templates
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  migrate:
+    build:
+      context: ./backend
+      target: production
+    env_file:
+      - ./backend/.env.production
+    command: alembic upgrade head
+    profiles:
+      - tools
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  create-first-admin:
+    build:
+      context: ./backend
+      target: production
+    env_file:
+      - ./backend/.env.production
+    command: python -m app.cli create-first-admin
+    profiles:
+      - tools
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    restart: unless-stopped
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  postgres_data:
+  partner_templates:

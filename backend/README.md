@@ -146,6 +146,76 @@ pip install -e ".[dev]"
 uvicorn app.main:app --reload
 ```
 
+## Production-запуск
+
+Production-контур описан в корневом файле `docker-compose.prod.yml`. Он отличается от dev-контура тем, что backend запускается без `--reload`, без bind-mount исходного кода, без dev-зависимостей и от имени непривилегированного пользователя внутри контейнера.
+
+Подготовить env-файл:
+
+```bash
+cp backend/.env.production.example backend/.env.production
+```
+
+В `backend/.env.production` нужно заменить секреты и пароли:
+
+```text
+RESUME_CONVERTER_JWT_SECRET_KEY
+POSTGRES_PASSWORD
+RESUME_CONVERTER_DATABASE_URL
+RESUME_CONVERTER_FIRST_ADMIN_PASSWORD
+```
+
+Собрать production-образ:
+
+```bash
+docker compose --env-file backend/.env.production -f docker-compose.prod.yml build
+```
+
+Применить миграции отдельной командой:
+
+```bash
+docker compose --env-file backend/.env.production -f docker-compose.prod.yml --profile tools run --rm migrate
+```
+
+Создать или обновить первого администратора:
+
+```bash
+docker compose --env-file backend/.env.production -f docker-compose.prod.yml --profile tools run --rm create-first-admin
+```
+
+Запустить приложение:
+
+```bash
+docker compose --env-file backend/.env.production -f docker-compose.prod.yml up -d
+```
+
+Проверить состояние контейнеров:
+
+```bash
+docker compose --env-file backend/.env.production -f docker-compose.prod.yml ps
+```
+
+Проверить health endpoint:
+
+```bash
+curl http://localhost:8000/api/v1/health
+```
+
+Посмотреть логи:
+
+```bash
+docker compose --env-file backend/.env.production -f docker-compose.prod.yml logs -f backend
+```
+
+Логи приложения пишутся в stdout/stderr контейнера. Постоянно сохраняются только данные PostgreSQL и шаблоны партнёров в Docker volumes:
+
+```text
+postgres_data
+partner_templates
+```
+
+Временные файлы резюме остаются внутри временного каталога контейнера и удаляются политикой приложения после обработки.
+
 ## Настройки
 
 Настройки читаются из переменных окружения с префиксом `RESUME_CONVERTER_`.
