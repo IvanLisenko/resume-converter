@@ -1,5 +1,4 @@
 from pathlib import Path
-from time import perf_counter
 from uuid import UUID
 
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -7,12 +6,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.errors import AppError
 from app.documents.docx_generator import DocxGenerationService
 from app.models.enums import OperationStatus, OperationType
-from app.models.operation_log import OperationLog
 from app.models.partner import Partner
 from app.models.partner_template import PartnerTemplate
-from app.repositories.operation_log_repository import OperationLogRepository
 from app.repositories.partner_template_repository import PartnerTemplateRepository
 from app.schemas.generation import ResumeGenerateRequest
+from app.services.operation_log_service import OperationLogService
 from app.storage.factory import get_temporary_file_policy
 
 from .partner_service import PartnerService
@@ -32,7 +30,6 @@ class ResumeGenerationService:
     ) -> None:
         self.session = session
         self.template_repository = PartnerTemplateRepository(session)
-        self.operation_log_repository = OperationLogRepository(session)
         self.generator = generator or DocxGenerationService()
 
     async def generate_resume(
@@ -40,7 +37,7 @@ class ResumeGenerationService:
         payload: ResumeGenerateRequest,
         user_id: UUID,
     ) -> GeneratedResume:
-        started_at = perf_counter()
+        started_at = OperationLogService.start_timer()
         partner: Partner | None = None
 
         try:
@@ -66,6 +63,7 @@ class ResumeGenerationService:
                 filename=f"resume_{partner.code}.docx",
             )
         except AppError as exc:
+            await self.session.rollback()
             await self._log_generation(
                 user_id=user_id,
                 partner_id=partner.id if partner is not None else payload.partner_id,
@@ -75,6 +73,7 @@ class ResumeGenerationService:
             )
             raise
         except Exception as exc:
+            await self.session.rollback()
             await self._log_generation(
                 user_id=user_id,
                 partner_id=partner.id if partner is not None else payload.partner_id,
@@ -106,15 +105,11 @@ class ResumeGenerationService:
         started_at: float,
         error_code: str | None = None,
     ) -> None:
-        duration_ms = int((perf_counter() - started_at) * 1000)
-        self.operation_log_repository.add(
-            OperationLog(
-                user_id=user_id,
-                partner_id=partner_id,
-                operation_type=OperationType.GENERATE_RESUME,
-                status=status,
-                error_code=error_code,
-                duration_ms=duration_ms,
-            )
+        await OperationLogService(self.session).log(
+            operation_type=OperationType.GENERATE_RESUME,
+            status=status,
+            user_id=user_id,
+            partner_id=partner_id,
+            error_code=error_code,
+            started_at=started_at,
         )
-        await self.session.commit()

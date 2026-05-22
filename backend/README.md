@@ -97,6 +97,12 @@ PATCH  /api/v1/admin/users/{user_id}/block
 PATCH  /api/v1/admin/users/{user_id}/unblock
 ```
 
+Endpoint журнала операций:
+
+```text
+GET /api/v1/admin/operation-logs
+```
+
 Endpoints резюме:
 
 ```text
@@ -487,6 +493,75 @@ employment.period
 ```
 
 Backend не подставляет `None` в шаблон: отсутствующие значения передаются как пустые строки. За скрытие заголовков пустых секций отвечает сам шаблон через условия.
+
+## Журнал операций
+
+Служебные действия фиксируются в таблице `operation_logs`. Журнал доступен только администратору:
+
+```http
+GET /api/v1/admin/operation-logs?limit=100
+```
+
+В журнал записываются:
+
+- `user_id` - сотрудник, выполнивший действие;
+- `partner_id` - партнёр, если операция связана с партнёром;
+- `operation_type` - тип операции;
+- `status` - `SUCCESS` или `FAILED`;
+- `error_code` - код бизнес-ошибки при неуспешной операции;
+- `duration_ms` - длительность операции;
+- `created_at` - дата и время записи.
+
+Поддерживаемые типы операций:
+
+```text
+LOGIN
+CREATE_USER
+CHANGE_USER_ROLE
+BLOCK_USER
+EXTRACT_RESUME
+GENERATE_RESUME
+CREATE_PARTNER
+UPDATE_PARTNER
+UPLOAD_TEMPLATE
+ACTIVATE_TEMPLATE
+```
+
+Журнал не хранит ФИО кандидата, контакты, текст резюме, исходный файл, сгенерированный файл или полный JSON резюме.
+
+## Формат ошибок
+
+Все прикладные ошибки возвращаются в едином JSON-формате:
+
+```json
+{
+  "code": "resume.invalid_format",
+  "message": "Файл должен быть в формате .docx",
+  "details": {}
+}
+```
+
+Поле `code` предназначено для frontend-логики и локализации, `message` - для отображения понятного текста, `details` - для дополнительных машинно-читаемых данных.
+
+Примеры кодов:
+
+```text
+auth.unauthorized
+auth.forbidden
+user.not_found
+user.email_already_exists
+resume.file_too_large
+resume.invalid_format
+resume.trive_format_not_detected
+resume.extraction_failed
+partner.not_found
+template.not_found
+template.invalid
+template.unknown_variable
+generation.failed
+request.validation_failed
+internal.error
+```
 
 ## База данных
 
