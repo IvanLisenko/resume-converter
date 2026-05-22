@@ -5,6 +5,7 @@ import { PartnerSelect } from './PartnerSelect';
 import { GenerateButton } from './GenerateButton';
 import { ErrorAlert } from './ErrorAlert';
 import type { CandidateData } from '../types/candidate';
+import '../styles/MainPage.css';  
 
 interface MainPageProps {
   onLogout: () => void;
@@ -20,7 +21,6 @@ export const MainPage = ({ onLogout }: MainPageProps) => {
     setFileLoading(true);
     setError(null);
     
-    // TODO: заменить на реальный uploadFile из api
     setTimeout(() => {
       setCandidate({
         fio: 'Иванов Иван Иванович',
@@ -63,32 +63,35 @@ export const MainPage = ({ onLogout }: MainPageProps) => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-6xl mx-auto p-6">
+    <div className="main-page">
+      <div className="main-container">
         {/* Шапка */}
-        <div className="flex justify-between items-center mb-6 pb-4 border-b">
-          <h1 className="text-2xl font-bold text-gray-800">Конвертер резюме</h1>
-          <button
-            onClick={onLogout}
-            className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition"
-          >
+        <div className="main-header">
+          <h1 className="main-logo">Конвертер резюме</h1>
+          <button onClick={onLogout} className="logout-button">
             Выйти
           </button>
         </div>
 
         {/* Загрузка файла */}
-        <FileUpload onUpload={handleUpload} isLoading={fileLoading} />
+        <div className="upload-area">
+          <FileUpload onUpload={handleUpload} isLoading={fileLoading} />
+        </div>
 
         {/* Ошибки */}
-        {error && <ErrorAlert message={error} onClose={clearError} />}
+        {error && (
+          <div className="error-block">
+            <ErrorAlert message={error} onClose={clearError} />
+          </div>
+        )}
 
         {/* Форма редактирования */}
         {candidate && (
-          <div className="mt-8">
+          <div className="candidate-section">
             <CandidateForm data={candidate} onChange={setCandidate} />
             
-            <div className="mt-8 pt-6 border-t">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-end">
+            <div className="action-section">
+              <div className="action-grid">
                 <PartnerSelect onSelect={setSelectedPartner} />
                 <GenerateButton
                   candidate={candidate}
@@ -101,13 +104,7 @@ export const MainPage = ({ onLogout }: MainPageProps) => {
           </div>
         )}
 
-        {/* Подсказка */}
-        {!candidate && !fileLoading && (
-          <div className="mt-8 text-center text-gray-400">
-            <p>Загрузите резюме в формате .docx</p>
-            <p className="text-sm mt-1">Поддерживаются файлы до 10 МБ</p>
-          </div>
-        )}
+        
       </div>
     </div>
   );

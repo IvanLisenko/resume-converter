@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { generateResume } from '../services/api';
 import type { CandidateData } from '../types/candidate';
+import '../styles/GenerateButton.css';
 
 interface GenerateButtonProps {
   candidate: CandidateData;
@@ -45,9 +46,16 @@ export const GenerateButton = ({ candidate, partnerId, onSuccess, onError }: Gen
     <button
       onClick={handleGenerate}
       disabled={generating || !partnerId}
-      className="px-6 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition"
+      className="generate-button"
     >
-      {generating ? 'Генерация...' : 'Сконвертировать'}
+      {generating ? (
+        <>
+          <div className="button-spinner" />
+          Генерация...
+        </>
+      ) : (
+        'Сконвертировать'
+      )}
     </button>
   );
 };

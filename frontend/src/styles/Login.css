@@ -1,0 +1,154 @@
+
+.login-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+
+  background: linear-gradient(135deg, #dbeafe 0%, #eef2ff 50%, #f8fafc 100%);
+  overflow: hidden;
+  font-family: 'Inter', sans-serif;
+}
+
+
+.login-page::before {
+  content: '';
+  position: absolute;
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(circle, rgba(59, 130, 246, 0.25), transparent 70%);
+  top: -100px;
+  left: -100px;
+  z-index: 0;
+}
+
+
+.login-card {
+  position: relative;
+  z-index: 1;
+
+  width: 400px;
+  padding: 40px;
+
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 24px;
+
+  box-shadow:
+    0 10px 30px rgba(0, 0, 0, 0.08),
+    0 30px 80px rgba(59, 130, 246, 0.15);
+
+  backdrop-filter: blur(10px);
+  transition: 0.3s;
+}
+
+.login-card:hover {
+  transform: translateY(-6px);
+}
+
+
+.login-title {
+  font-size: 28px;
+  font-weight: 700;
+  text-align: center;
+  color: #111827;
+  margin-bottom: 6px;
+}
+
+.login-subtitle {
+  text-align: center;
+  color: #4b5563;
+  margin-bottom: 30px;
+}
+
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+}
+
+
+.input-group {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 18px;
+}
+
+.input-group label {
+  font-size: 14px;
+  margin-bottom: 6px;
+  color: #374151;
+  font-weight: 500;
+}
+
+.input-group input {
+  padding: 13px 14px;
+  border-radius: 12px;
+  border: 1px solid #d1d5db;
+  outline: none;
+
+  font-size: 14px;
+  background: #f9fafb;
+
+  transition: all 0.2s ease;
+}
+
+.input-group input:focus {
+  background: #ffffff;
+  border-color: #2563eb;
+
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
+}
+
+
+.login-button {
+  margin-top: 12px;
+  padding: 13px;
+
+  border: none;
+  border-radius: 14px;
+
+  background: linear-gradient(135deg, #2563eb, #1e3a8a);
+  color: white;
+
+  font-size: 15px;
+  font-weight: 600;
+
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.login-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 30px rgba(37, 99, 235, 0.4);
+}
+
+.login-button:active {
+  transform: scale(0.98);
+}
+
+.login-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.input-group input {
+  color: #111827; 
+}
+
+
+.input-group input::placeholder {
+  color: #9ca3af; 
+  opacity: 1;
+}
+
+
+.input-group input:focus {
+  color: #111827;
+}
+
+
+input:-webkit-autofill {
+  -webkit-text-fill-color: #111827;
+  transition: background-color 9999s ease-in-out 0s;
+}

@@ -1,0 +1,86 @@
+/* PartnerSelect - стиль TRAIV */
+.partner-select {
+  width: 100%;
+}
+
+.partner-label {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #1e3a8a;
+  margin-bottom: 0.5rem;
+}
+
+.partner-label .required {
+  color: #ef4444;
+  margin-left: 0.25rem;
+}
+
+.partner-select-wrapper {
+  position: relative;
+}
+
+.partner-select-wrapper::after {
+  content: "▼";
+  position: absolute;
+  right: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 0.7rem;
+  color: #6b7280;
+  pointer-events: none;
+}
+
+.partner-dropdown {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  background: white;
+  border: 1px solid #d1d5db;
+  border-radius: 14px;
+  font-size: 0.9rem;
+  color: #1f2937;
+  cursor: pointer;
+  appearance: none;
+  transition: all 0.2s ease;
+}
+
+.partner-dropdown:hover {
+  border-color: #2563eb;
+}
+
+.partner-dropdown:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.partner-dropdown option {
+  padding: 0.5rem;
+}
+
+
+.partner-loading {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  background: #f8fafc;
+  border-radius: 14px;
+  color: #6b7280;
+  font-size: 0.85rem;
+}
+
+.partner-loading-spinner {
+  width: 18px;
+  height: 18px;
+  border: 2px solid #e2e8f0;
+  border-top-color: #2563eb;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

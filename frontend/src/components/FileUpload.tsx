@@ -1,5 +1,6 @@
 import { useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
+import '../styles/FileUpload.css';
 
 interface FileUploadProps {
   onUpload: (file: File) => void;
@@ -24,28 +25,51 @@ export const FileUpload = ({ onUpload, isLoading }: FileUploadProps) => {
   });
 
   return (
-    <div
-      {...getRootProps()}
-      className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors
-        ${isDragActive ? 'border-blue-500 bg-blue-50' : 'border-gray-300 hover:border-gray-400'}
-        ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
-    >
-      <input {...getInputProps()} />
-      
-      {isLoading ? (
-        <div className="flex flex-col items-center gap-2">
-          <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
-          <p className="text-gray-600">Загрузка и парсинг файла...</p>
+    <div className="upload-wrapper">
+      {/* Левая часть — зона загрузки */}
+      <div className="dropzone-area">
+        <div
+          {...getRootProps()}
+          className={`dropzone ${isDragActive ? 'dropzone-active' : ''} ${isLoading ? 'dropzone-loading' : ''}`}
+        >
+          <input {...getInputProps()} />
+          
+          {isLoading ? (
+            <>
+              <div className="spinner" />
+              <div className="dropzone-title">Загрузка...</div>
+              <div className="dropzone-subtitle">Парсим данные резюме</div>
+            </>
+          ) : isDragActive ? (
+            <>
+              <div className="dropzone-icon">📂</div>
+              <div className="dropzone-title">Отпустите файл</div>
+              <div className="dropzone-subtitle">Мы обработаем его</div>
+            </>
+          ) : (
+            <>
+              <div className="dropzone-icon">📄</div>
+              <div className="dropzone-title">Перетащите файл .docx сюда</div>
+              <div className="dropzone-subtitle">или кликните для выбора</div>
+              <div className="dropzone-hint">Максимум 10 МБ</div>
+            </>
+          )}
         </div>
-      ) : isDragActive ? (
-        <p className="text-lg text-blue-600">Отпустите файл здесь</p>
-      ) : (
-        <div>
-          <p className="text-lg">📄 Перетащите файл .docx сюда</p>
-          <p className="text-sm text-gray-500 mt-1">или кликните для выбора</p>
-          <p className="text-xs text-gray-400 mt-2">Максимум 10 МБ</p>
-        </div>
-      )}
+      </div>
+
+      {/* Правая часть — описание */}
+      <div className="upload-info">
+        <h3 className="info-title">Конвертер резюме ТРАЙВ</h3>
+        <p className="info-description">
+          Загрузите резюме в формате .docx, и мы автоматически распарсим все данные:
+        </p>
+        <ul className="info-features">
+          <li>ФИО и контактные данные</li>
+          <li>Опыт работы и проекты</li>
+          <li>Образование и навыки</li>
+          <li>Языки и технологии</li>
+        </ul>
+      </div>
     </div>
   );
 };

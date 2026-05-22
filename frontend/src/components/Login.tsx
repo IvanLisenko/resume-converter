@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { login } from '../services/api';
 import { ErrorAlert } from './ErrorAlert';
+import '../styles/Login.css';
 
 interface LoginProps {
   onLogin: (token: string) => void;
@@ -30,45 +31,37 @@ export const Login = ({ onLogin }: LoginProps) => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <div className="bg-white p-8 rounded-lg shadow-md w-96">
-        <h1 className="text-2xl font-bold text-center mb-6">Конвертер резюме</h1>
-        <h2 className="text-lg text-center text-gray-600 mb-6">Вход в систему</h2>
-        
-        <form onSubmit={handleSubmit}>
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Email
-            </label>
+    <div className="login-page">
+      <div className="login-card">
+        <h1 className="login-title">Конвертер резюме</h1>
+        <p className="login-subtitle">Вход в систему</p>
+
+        <form onSubmit={handleSubmit} className="login-form">
+          <div className="input-group">
+            <label>Email</label>
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="example@mail.com"
               required
             />
           </div>
-          
-          <div className="mb-6">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Пароль
-            </label>
+
+          <div className="input-group">
+            <label>Пароль</label>
             <input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="••••••••"
               required
             />
           </div>
-          
+
           {error && <ErrorAlert message={error} onClose={() => setError('')} />}
-          
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 disabled:opacity-50 mt-4"
-          >
+
+          <button type="submit" disabled={loading} className="login-button">
             {loading ? 'Вход...' : 'Войти'}
           </button>
         </form>

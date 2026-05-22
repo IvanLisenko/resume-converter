@@ -1,4 +1,5 @@
 import type { CandidateData, Experience, Project } from '../types/candidate';
+import '../styles/CandidateForm.css';
 
 interface CandidateFormProps {
   data: CandidateData;
@@ -13,7 +14,7 @@ export const CandidateForm = ({ data, onChange }: CandidateFormProps) => {
     onChange({ ...data, [field]: value });
   };
 
-  // ============= ОПЫТ РАБОТЫ =============
+
   const addExperience = () => {
     const newExperience: Experience = {
       title: '',
@@ -40,7 +41,7 @@ export const CandidateForm = ({ data, onChange }: CandidateFormProps) => {
     updateField('experience', newExperience);
   };
 
-  // ============= ПРОЕКТЫ =============
+ 
   const addProject = () => {
     const newProject: Project = {
       name: '',
@@ -79,286 +80,238 @@ export const CandidateForm = ({ data, onChange }: CandidateFormProps) => {
   };
 
   return (
-    <div className="space-y-6">
-      <h2 className="text-xl font-semibold">Данные кандидата</h2>
-      <p className="text-sm text-gray-500">Проверьте и при необходимости отредактируйте данные</p>
+    <div className="candidate-form">
+      <h2 className="form-title">Данные кандидата</h2>
+      <p className="form-subtitle">Проверьте и при необходимости отредактируйте данные</p>
 
-      {/* ============= БАЗОВЫЕ ПОЛЯ ============= */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            ФИО <span className="text-red-500">*</span>
-          </label>
-          <input
-            type="text"
-            value={data.fio}
-            onChange={(e) => updateField('fio', e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
+      {/* БАЗОВЫЕ ПОЛЯ */}
+      <div className="form-section">
+        <div className="form-grid">
+          <div className="form-field">
+            <label className="form-label required">ФИО</label>
+            <input
+              type="text"
+              value={data.fio}
+              onChange={(e) => updateField('fio', e.target.value)}
+              className="form-input"
+            />
+          </div>
+
+          <div className="form-field">
+            <label className="form-label">Должность</label>
+            <input
+              type="text"
+              value={data.position}
+              onChange={(e) => updateField('position', e.target.value)}
+              className="form-input"
+            />
+          </div>
+
+          <div className="form-field full-width">
+            <label className="form-label">Контакты (телефон, email)</label>
+            <input
+              type="text"
+              value={data.contacts}
+              onChange={(e) => updateField('contacts', e.target.value)}
+              className="form-input"
+            />
+          </div>
+
+          <div className="form-field full-width">
+            <label className="form-label">Образование</label>
+            <textarea
+              value={data.education}
+              onChange={(e) => updateField('education', e.target.value)}
+              rows={2}
+              className="form-textarea"
+            />
+          </div>
         </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Должность
-          </label>
-          <input
-            type="text"
-            value={data.position}
-            onChange={(e) => updateField('position', e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
       </div>
 
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Контакты (телефон, email)
-        </label>
-        <input
-          type="text"
-          value={data.contacts}
-          onChange={(e) => updateField('contacts', e.target.value)}
-          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-        />
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Образование
-        </label>
-        <textarea
-          value={data.education}
-          onChange={(e) => updateField('education', e.target.value)}
-          rows={2}
-          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-        />
-      </div>
-
-      {/* ============= ОПЫТ РАБОТЫ ============= */}
-      <div className="border-t pt-4">
-        <div className="flex justify-between items-center mb-3">
-          <h3 className="text-lg font-medium">Опыт работы</h3>
-          <button
-            type="button"
-            onClick={addExperience}
-            className="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700"
-          >
+      {/* ОПЫТ РАБОТЫ */}
+      <div className="form-section">
+        <div className="section-header">
+          <h3 className="section-title">Опыт работы</h3>
+          <button type="button" onClick={addExperience} className="add-button">
             + Добавить место работы
           </button>
         </div>
 
         {data.experience.length === 0 && (
-          <p className="text-gray-400 text-sm">Нет добавленного опыта работы</p>
+          <div className="empty-state-small">Нет добавленного опыта работы</div>
         )}
 
         {data.experience.map((exp, index) => (
-          <div key={exp.id ?? index} className="border rounded-lg p-4 mb-4 bg-gray-50">
-            <div className="flex justify-end mb-2">
-              <button
-                type="button"
-                onClick={() => removeExperience(index)}
-                className="text-red-600 hover:text-red-800 text-sm"
-              >
-                🗑 Удалить
+          <div key={exp.id ?? index} className="experience-card">
+            <div className="card-header">
+              <button type="button" onClick={() => removeExperience(index)} className="remove-button">
+                ✕ Удалить
               </button>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Должность
-                </label>
+            <div className="form-grid">
+              <div className="form-field">
+                <label className="form-label">Должность</label>
                 <input
                   type="text"
                   value={exp.title}
                   onChange={(e) => updateExperience(index, 'title', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="form-input"
                 />
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Проект / Компания
-                </label>
+              <div className="form-field">
+                <label className="form-label">Проект / Компания</label>
                 <input
                   type="text"
                   value={exp.project_name}
                   onChange={(e) => updateExperience(index, 'project_name', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="form-input"
                 />
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Период
-                </label>
+              <div className="form-field">
+                <label className="form-label">Период</label>
                 <input
                   type="text"
                   value={exp.period}
                   onChange={(e) => updateExperience(index, 'period', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="form-input"
                   placeholder="сентябрь 2017 — н.в."
                 />
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Команда
-                </label>
+              <div className="form-field">
+                <label className="form-label">Команда</label>
                 <input
                   type="text"
                   value={exp.team}
                   onChange={(e) => updateExperience(index, 'team', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="form-input"
                   placeholder="10 backend, 3 frontend"
                 />
               </div>
-            </div>
 
-            <div className="mt-3">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Описание проекта
-              </label>
-              <textarea
-                value={exp.description}
-                onChange={(e) => updateExperience(index, 'description', e.target.value)}
-                rows={2}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
+              <div className="form-field full-width">
+                <label className="form-label">Описание проекта</label>
+                <textarea
+                  value={exp.description}
+                  onChange={(e) => updateExperience(index, 'description', e.target.value)}
+                  rows={2}
+                  className="form-textarea"
+                />
+              </div>
 
-            <div className="mt-3">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Обязанности (каждая с новой строки)
-              </label>
-              <textarea
-                value={exp.responsibilities.join('\n')}
-                onChange={(e) => updateExperience(index, 'responsibilities', e.target.value.split('\n').filter(Boolean))}
-                rows={3}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
+              <div className="form-field full-width">
+                <label className="form-label">Обязанности (каждая с новой строки)</label>
+                <textarea
+                  value={exp.responsibilities.join('\n')}
+                  onChange={(e) => updateExperience(index, 'responsibilities', e.target.value.split('\n').filter(Boolean))}
+                  rows={3}
+                  className="form-textarea"
+                />
+              </div>
 
-            <div className="mt-3">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Достижения (каждое с новой строки)
-              </label>
-              <textarea
-                value={exp.achievements.join('\n')}
-                onChange={(e) => updateExperience(index, 'achievements', e.target.value.split('\n').filter(Boolean))}
-                rows={2}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
+              <div className="form-field full-width">
+                <label className="form-label">Достижения (каждое с новой строки)</label>
+                <textarea
+                  value={exp.achievements.join('\n')}
+                  onChange={(e) => updateExperience(index, 'achievements', e.target.value.split('\n').filter(Boolean))}
+                  rows={2}
+                  className="form-textarea"
+                />
+              </div>
 
-            <div className="mt-3">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Технологии (через запятую)
-              </label>
-              <input
-                type="text"
-                value={exp.stack.join(', ')}
-                onChange={(e) => updateExperience(index, 'stack', e.target.value.split(',').map(s => s.trim()).filter(Boolean))}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
+              <div className="form-field full-width">
+                <label className="form-label">Технологии (через запятую)</label>
+                <input
+                  type="text"
+                  value={exp.stack.join(', ')}
+                  onChange={(e) => updateExperience(index, 'stack', e.target.value.split(',').map(s => s.trim()).filter(Boolean))}
+                  className="form-input"
+                />
+              </div>
             </div>
           </div>
         ))}
       </div>
 
-      {/* ============= ПРОЕКТЫ ============= */}
-      <div className="border-t pt-4">
-        <div className="flex justify-between items-center mb-3">
-          <h3 className="text-lg font-medium">Проекты</h3>
-          <button
-            type="button"
-            onClick={addProject}
-            className="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700"
-          >
+      {/* ПРОЕКТЫ */}
+      <div className="form-section">
+        <div className="section-header">
+          <h3 className="section-title">Проекты</h3>
+          <button type="button" onClick={addProject} className="add-button">
             + Добавить проект
           </button>
         </div>
 
         {(!data.projects || data.projects.length === 0) && (
-          <p className="text-gray-400 text-sm">Нет добавленных проектов</p>
+          <div className="empty-state-small">Нет добавленных проектов</div>
         )}
 
         {data.projects?.map((project, index) => (
-          <div key={project.id ?? index} className="border rounded-lg p-4 mb-4 bg-gray-50">
-            <div className="flex justify-end mb-2">
-              <button
-                type="button"
-                onClick={() => removeProject(index)}
-                className="text-red-600 hover:text-red-800 text-sm"
-              >
-                🗑 Удалить
+          <div key={project.id ?? index} className="project-card">
+            <div className="card-header">
+              <button type="button" onClick={() => removeProject(index)} className="remove-button">
+                ✕ Удалить
               </button>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Название проекта
-                </label>
+            <div className="form-grid">
+              <div className="form-field">
+                <label className="form-label">Название проекта</label>
                 <input
                   type="text"
                   value={project.name}
                   onChange={(e) => updateProject(index, 'name', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="form-input"
                 />
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Роль в проекте
-                </label>
+              <div className="form-field">
+                <label className="form-label">Роль в проекте</label>
                 <input
                   type="text"
                   value={project.role}
                   onChange={(e) => updateProject(index, 'role', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="form-input"
                 />
               </div>
-            </div>
 
-            <div className="mt-3">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Описание проекта
-              </label>
-              <textarea
-                value={project.description}
-                onChange={(e) => updateProject(index, 'description', e.target.value)}
-                rows={2}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
+              <div className="form-field full-width">
+                <label className="form-label">Описание проекта</label>
+                <textarea
+                  value={project.description}
+                  onChange={(e) => updateProject(index, 'description', e.target.value)}
+                  rows={2}
+                  className="form-textarea"
+                />
+              </div>
             </div>
           </div>
         ))}
       </div>
 
-      {/* ============= НАВЫКИ И ЯЗЫКИ ============= */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Навыки (через запятую)
-          </label>
+      {/* НАВЫКИ И ЯЗЫКИ */}
+      <div className="skills-languages-grid">
+        <div className="form-field">
+          <label className="form-label">Навыки (через запятую)</label>
           <input
             type="text"
             value={skillsString}
             onChange={(e) => handleSkillsChange(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="form-input"
           />
         </div>
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Языки (через запятую)
-          </label>
+        <div className="form-field">
+          <label className="form-label">Языки (через запятую)</label>
           <input
             type="text"
             value={languagesString}
             onChange={(e) => handleLanguagesChange(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="form-input"
           />
         </div>
       </div>
