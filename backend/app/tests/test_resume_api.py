@@ -7,6 +7,7 @@ from app.api.dependencies import get_current_user
 from app.main import create_app
 from app.models.enums import UserRole
 from app.models.user import User
+from app.services.operation_log_service import OperationLogService
 
 
 def _create_trive_docx(path) -> None:
@@ -37,8 +38,13 @@ def _create_trive_docx(path) -> None:
     document.save(path)
 
 
-def test_extract_resume_api_returns_unified_resume_model(tmp_path):
+def test_extract_resume_api_returns_unified_resume_model(tmp_path, monkeypatch):
     app = create_app()
+
+    async def skip_operation_log(*args, **kwargs) -> None:
+        return None
+
+    monkeypatch.setattr(OperationLogService, "log", skip_operation_log)
 
     async def override_current_user() -> User:
         return User(

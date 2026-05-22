@@ -4,9 +4,10 @@ from uuid import UUID
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.api.dependencies import require_roles
+from app.api.dependencies import get_current_user, require_roles
+from app.core.errors import AppError
 from app.db.session import get_db_session
-from app.models.enums import UserRole
+from app.models.enums import OperationStatus, OperationType, UserRole
 from app.models.user import User
 from app.schemas.users import (
     UserCreateRequest,
@@ -14,6 +15,7 @@ from app.schemas.users import (
     UserRoleUpdateRequest,
     UserUpdateRequest,
 )
+from app.services.operation_log_service import OperationLogService
 from app.services.user_service import UserService
 
 router = APIRouter(
@@ -33,9 +35,30 @@ async def list_users(
 @router.post("", response_model=UserResponse, status_code=201)
 async def create_user(
     payload: UserCreateRequest,
+    current_user: Annotated[User, Depends(get_current_user)],
     session: Annotated[AsyncSession, Depends(get_db_session)],
 ) -> User:
-    return await UserService(session).create_user(payload)
+    current_user_id = current_user.id
+    started_at = OperationLogService.start_timer()
+    try:
+        user = await UserService(session).create_user(payload)
+        await OperationLogService(session).log(
+            operation_type=OperationType.CREATE_USER,
+            status=OperationStatus.SUCCESS,
+            user_id=current_user_id,
+            started_at=started_at,
+        )
+        return user
+    except AppError as exc:
+        await session.rollback()
+        await OperationLogService(session).log(
+            operation_type=OperationType.CREATE_USER,
+            status=OperationStatus.FAILED,
+            user_id=current_user_id,
+            error_code=exc.code,
+            started_at=started_at,
+        )
+        raise
 
 
 @router.get("/{user_id}", response_model=UserResponse)
@@ -59,17 +82,59 @@ async def update_user(
 async def update_user_role(
     user_id: UUID,
     payload: UserRoleUpdateRequest,
+    current_user: Annotated[User, Depends(get_current_user)],
     session: Annotated[AsyncSession, Depends(get_db_session)],
 ) -> User:
-    return await UserService(session).update_role(user_id, payload)
+    current_user_id = current_user.id
+    started_at = OperationLogService.start_timer()
+    try:
+        user = await UserService(session).update_role(user_id, payload)
+        await OperationLogService(session).log(
+            operation_type=OperationType.CHANGE_USER_ROLE,
+            status=OperationStatus.SUCCESS,
+            user_id=current_user_id,
+            started_at=started_at,
+        )
+        return user
+    except AppError as exc:
+        await session.rollback()
+        await OperationLogService(session).log(
+            operation_type=OperationType.CHANGE_USER_ROLE,
+            status=OperationStatus.FAILED,
+            user_id=current_user_id,
+            error_code=exc.code,
+            started_at=started_at,
+        )
+        raise
 
 
 @router.patch("/{user_id}/block", response_model=UserResponse)
 async def block_user(
     user_id: UUID,
+    current_user: Annotated[User, Depends(get_current_user)],
     session: Annotated[AsyncSession, Depends(get_db_session)],
 ) -> User:
-    return await UserService(session).block_user(user_id)
+    current_user_id = current_user.id
+    started_at = OperationLogService.start_timer()
+    try:
+        user = await UserService(session).block_user(user_id)
+        await OperationLogService(session).log(
+            operation_type=OperationType.BLOCK_USER,
+            status=OperationStatus.SUCCESS,
+            user_id=current_user_id,
+            started_at=started_at,
+        )
+        return user
+    except AppError as exc:
+        await session.rollback()
+        await OperationLogService(session).log(
+            operation_type=OperationType.BLOCK_USER,
+            status=OperationStatus.FAILED,
+            user_id=current_user_id,
+            error_code=exc.code,
+            started_at=started_at,
+        )
+        raise
 
 
 @router.patch("/{user_id}/unblock", response_model=UserResponse)
