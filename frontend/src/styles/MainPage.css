@@ -1,0 +1,109 @@
+
+.main-page {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #dbeafe 0%, #eef2ff 50%, #f8fafc 100%);
+  font-family: 'Inter', sans-serif;
+}
+
+.main-container {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+/* Шапка */
+.main-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid rgba(37, 99, 235, 0.15);
+}
+
+.main-logo {
+  font-size: 1.8rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, #1e3a8a, #2563eb);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  letter-spacing: -0.02em;
+}
+
+.logout-button {
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(37, 99, 235, 0.2);
+  padding: 0.5rem 1.25rem;
+  border-radius: 40px;
+  color: #1e3a8a;
+  font-weight: 500;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  backdrop-filter: blur(4px);
+}
+
+.logout-button:hover {
+  background: white;
+  border-color: #2563eb;
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.15);
+  transform: translateY(-1px);
+}
+
+
+.upload-area {
+  margin-bottom: 1.5rem;
+}
+
+
+.error-block {
+  margin-top: 1.5rem;
+}
+
+
+.candidate-section {
+  margin-top: 2rem;
+}
+
+
+.action-section {
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid rgba(37, 99, 235, 0.15);
+}
+
+.action-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+}
+
+@media (min-width: 768px) {
+  .action-grid {
+    grid-template-columns: 1fr 1fr;
+    align-items: flex-end;
+  }
+}
+
+
+.empty-state {
+  margin-top: 2rem;
+  text-align: center;
+  color: #6b7280;
+}
+
+.empty-state-icon {
+  font-size: 3rem;
+  margin-bottom: 0.75rem;
+}
+
+.empty-state-text {
+  font-size: 1rem;
+}
+
+.empty-state-hint {
+  font-size: 0.8rem;
+  margin-top: 0.25rem;
+  opacity: 0.7;
+}

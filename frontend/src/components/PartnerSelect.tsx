@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { getPartners } from '../services/api';
 import type { Partner } from '../types/candidate';
+import '../styles/PartnerSelect.css';
 
 interface PartnerSelectProps {
   onSelect: (partnerId: string) => void;
@@ -32,26 +33,33 @@ export const PartnerSelect = ({ onSelect }: PartnerSelectProps) => {
   };
 
   if (loading) {
-    return <div className="text-gray-500">Загрузка партнёров...</div>;
+    return (
+      <div className="partner-loading">
+        <div className="partner-loading-spinner" />
+        <span>Загрузка партнёров...</span>
+      </div>
+    );
   }
 
   return (
-    <div>
-      <label className="block text-sm font-medium text-gray-700 mb-1">
-        Партнёр <span className="text-red-500">*</span>
+    <div className="partner-select">
+      <label className="partner-label">
+        Партнёр<span className="required">*</span>
       </label>
-      <select
-        value={selectedId}
-        onChange={handleChange}
-        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-      >
-        <option value="">Выберите партнёра</option>
-        {partners.map((partner) => (
-          <option key={partner.id} value={partner.id}>
-            {partner.name}
-          </option>
-        ))}
-      </select>
+      <div className="partner-select-wrapper">
+        <select
+          value={selectedId}
+          onChange={handleChange}
+          className="partner-dropdown"
+        >
+          <option value="">Выберите партнёра</option>
+          {partners.map((partner) => (
+            <option key={partner.id} value={partner.id}>
+              {partner.name}
+            </option>
+          ))}
+        </select>
+      </div>
     </div>
   );
 };
