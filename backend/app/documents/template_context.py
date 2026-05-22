@@ -10,8 +10,13 @@ class TemplateContextMapper:
     def map_resume(self, resume: ResumeData) -> dict[str, Any]:
         candidate = self._map_candidate(resume)
         checklist_text = str(resume.extra.get("checklist_text") or "").strip()
+        checklist_items = self._map_checklist_items(
+            resume.extra.get("checklist_items"),
+            checklist_text,
+        )
         primary_skills = resume.skills.primary
         detailed_skills = resume.skills.detailed
+        skill_groups = self._map_skill_groups(primary_skills, detailed_skills)
         has_primary_skills = bool(primary_skills)
         has_detailed_skills = bool(detailed_skills)
         context = {
@@ -29,6 +34,10 @@ class TemplateContextMapper:
                 "primary_text": ", ".join(primary_skills),
                 "detailed": detailed_skills,
                 "detailed_text": "\n".join(detailed_skills),
+                "programming_languages_text": ", ".join(skill_groups["programming_languages"]),
+                "tools_text": ", ".join(skill_groups["tools"]),
+                "databases_text": ", ".join(skill_groups["databases"]),
+                "other_text": ", ".join(skill_groups["other"]),
             },
             "education": [self._map_education(item) for item in resume.education],
             "languages": [item.model_dump() for item in resume.languages],
@@ -49,8 +58,9 @@ class TemplateContextMapper:
             "experience_heading": "Опыт работы" if resume.experience else "",
             "recent_projects_heading": "Недавние проекты" if resume.experience else "",
             "checklist_text": checklist_text,
-            "has_checklist": bool(checklist_text),
-            "checklist_heading": "Чек-лист" if checklist_text else "",
+            "checklist_items": checklist_items,
+            "has_checklist": bool(checklist_text or checklist_items),
+            "checklist_heading": "Чек-лист" if checklist_text or checklist_items else "",
             "employment": {
                 "period": resume.candidate.available_from or "",
             },
@@ -81,6 +91,10 @@ class TemplateContextMapper:
                 ),
                 "available_from_line": self._format_available_from_line(
                     resume.candidate.available_from,
+                ),
+                "total_experience_line": self._format_labeled_line(
+                    "Опыт работы",
+                    resume.candidate.total_experience,
                 ),
             }
         )
@@ -182,6 +196,148 @@ class TemplateContextMapper:
         if not value:
             return []
         return [paragraph.strip() for paragraph in re.split(r"\n{2,}", value) if paragraph.strip()]
+
+    @classmethod
+    def _map_checklist_items(
+        cls,
+        raw_items: object,
+        checklist_text: str,
+    ) -> list[dict[str, str]]:
+        items: list[dict[str, str]] = []
+
+        if isinstance(raw_items, list):
+            for raw_item in raw_items:
+                item = cls._normalize_checklist_item(raw_item)
+                if item is not None:
+                    items.append(item)
+
+        if items or not checklist_text:
+            return items
+
+        return [
+            {
+                "requirement": line,
+                "status": "",
+                "comment": "",
+            }
+            for line in checklist_text.splitlines()
+            if line.strip()
+        ]
+
+    @staticmethod
+    def _normalize_checklist_item(raw_item: object) -> dict[str, str] | None:
+        if isinstance(raw_item, str):
+            requirement = raw_item.strip()
+            if not requirement:
+                return None
+            return {
+                "requirement": requirement,
+                "status": "",
+                "comment": "",
+            }
+
+        if not isinstance(raw_item, dict):
+            return None
+
+        requirement = str(raw_item.get("requirement") or raw_item.get("text") or "").strip()
+        status = str(raw_item.get("status") or "").strip()
+        comment = str(raw_item.get("comment") or "").strip()
+        if not any([requirement, status, comment]):
+            return None
+        return {
+            "requirement": requirement,
+            "status": status,
+            "comment": comment,
+        }
+
+    @classmethod
+    def _map_skill_groups(
+        cls,
+        primary_skills: list[str],
+        detailed_skills: list[str],
+    ) -> dict[str, list[str]]:
+        groups = {
+            "programming_languages": [],
+            "tools": [],
+            "databases": [],
+            "other": [],
+        }
+        source_skills = primary_skills or detailed_skills
+        for skill in source_skills:
+            normalized_skill = skill.strip()
+            if not normalized_skill:
+                continue
+            group = cls._detect_skill_group(normalized_skill)
+            if normalized_skill not in groups[group]:
+                groups[group].append(normalized_skill)
+        return groups
+
+    @staticmethod
+    def _detect_skill_group(skill: str) -> str:
+        value = skill.lower()
+        programming_markers = {
+            "java",
+            "python",
+            "go",
+            "golang",
+            "kotlin",
+            "scala",
+            "javascript",
+            "typescript",
+            "bash",
+            "1c",
+        }
+        database_markers = {
+            "postgres",
+            "postgresql",
+            "mysql",
+            "mongodb",
+            "mongo",
+            "redis",
+            "clickhouse",
+            "oracle",
+            "cassandra",
+            "elasticsearch",
+            "elastic",
+            "sql",
+            "nosql",
+        }
+        tool_markers = {
+            "docker",
+            "kubernetes",
+            "openshift",
+            "git",
+            "gitlab",
+            "jenkins",
+            "nexus",
+            "jira",
+            "confluence",
+            "kafka",
+            "rabbitmq",
+            "grpc",
+            "rest",
+            "swagger",
+            "openapi",
+            "spring",
+            "hibernate",
+            "junit",
+            "mockito",
+            "selenium",
+            "testcontainers",
+            "terraform",
+            "ansible",
+            "prometheus",
+            "grafana",
+            "zabbix",
+        }
+
+        if any(marker in value for marker in database_markers):
+            return "databases"
+        if any(marker in value for marker in programming_markers):
+            return "programming_languages"
+        if any(marker in value for marker in tool_markers):
+            return "tools"
+        return "other"
 
     @classmethod
     def _clean_empty_values(cls, value: Any) -> Any:
