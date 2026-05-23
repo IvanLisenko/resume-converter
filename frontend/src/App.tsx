@@ -2,20 +2,26 @@ import { useState, useEffect } from 'react';
 import { Login } from './components/Login';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { MainPage } from './components/MainPage';
+import { AdminPage } from './components/AdminPage';
 import { getCurrentUser } from './services/api';
 
 function App() {
   const [token, setToken] = useState<string | null>(() => localStorage.getItem('token'));
   const [loading, setLoading] = useState(() => Boolean(localStorage.getItem('token')));
+  const [userRole, setUserRole] = useState<string | null>(null);
 
   useEffect(() => {
     const storedToken = localStorage.getItem('token');
     if (storedToken) {
       getCurrentUser()
-        .then(() => setToken(storedToken))
+        .then((user) => {
+          setToken(storedToken);
+          setUserRole(user.role);
+        })
         .catch(() => {
           localStorage.removeItem('token');
           setToken(null);
+          setUserRole(null);
         })
         .finally(() => setLoading(false));
     }
@@ -23,11 +29,15 @@ function App() {
 
   const handleLogin = (newToken: string) => {
     setToken(newToken);
+    getCurrentUser().then((user) => {
+      setUserRole(user.role);
+    });
   };
 
   const handleLogout = () => {
     localStorage.removeItem('token');
     setToken(null);
+    setUserRole(null);
   };
 
   if (loading) {
@@ -40,6 +50,14 @@ function App() {
 
   if (!token) {
     return <Login onLogin={handleLogin} />;
+  }
+
+  if (userRole === 'ADMIN') {
+    return (
+      <ProtectedRoute isAuthenticated={!!token}>
+        <AdminPage onLogout={handleLogout} />
+      </ProtectedRoute>
+    );
   }
 
   return (

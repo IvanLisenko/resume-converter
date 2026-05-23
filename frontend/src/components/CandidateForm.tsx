@@ -14,7 +14,7 @@ export const CandidateForm = ({ data, onChange }: CandidateFormProps) => {
     onChange({ ...data, [field]: value });
   };
 
-
+  // ============= ОПЫТ РАБОТЫ =============
   const addExperience = () => {
     const newExperience: Experience = {
       title: '',
@@ -41,7 +41,7 @@ export const CandidateForm = ({ data, onChange }: CandidateFormProps) => {
     updateField('experience', newExperience);
   };
 
- 
+  // ============= ПРОЕКТЫ =============
   const addProject = () => {
     const newProject: Project = {
       name: '',
@@ -65,19 +65,32 @@ export const CandidateForm = ({ data, onChange }: CandidateFormProps) => {
     updateField('projects', newProjects);
   };
 
-  // Навыки: строка через запятую → массив
-  const skillsString = data.skills.join(', ');
+  // ============= НАВЫКИ =============
+  const getSkillsString = () => {
+    if (!data.skills) return '';
+    if (Array.isArray(data.skills)) return data.skills.join(', ');
+    return data.skills;
+  };
+
   const handleSkillsChange = (value: string) => {
     const skills = value.split(',').map(s => s.trim()).filter(Boolean);
     updateField('skills', skills);
   };
 
-  // Языки: строка через запятую → массив
-  const languagesString = data.languages.join(', ');
+  // ============= ЯЗЫКИ =============
+  const getLanguagesString = () => {
+    if (!data.languages) return '';
+    if (Array.isArray(data.languages)) return data.languages.join(', ');
+    return data.languages;
+  };
+
   const handleLanguagesChange = (value: string) => {
     const languages = value.split(',').map(l => l.trim()).filter(Boolean);
     updateField('languages', languages);
   };
+
+  const skillsString = getSkillsString();
+  const languagesString = getLanguagesString();
 
   return (
     <div className="candidate-form">
@@ -107,6 +120,28 @@ export const CandidateForm = ({ data, onChange }: CandidateFormProps) => {
             />
           </div>
 
+          <div className="form-field">
+            <label className="form-label">Уровень (Junior/Middle/Senior)</label>
+            <input
+              type="text"
+              value={data.level || ''}
+              onChange={(e) => updateField('level', e.target.value)}
+              className="form-input"
+              placeholder="Senior"
+            />
+          </div>
+
+          <div className="form-field">
+            <label className="form-label">Локация</label>
+            <input
+              type="text"
+              value={data.location || ''}
+              onChange={(e) => updateField('location', e.target.value)}
+              className="form-input"
+              placeholder="Москва"
+            />
+          </div>
+
           <div className="form-field full-width">
             <label className="form-label">Контакты (телефон, email)</label>
             <input
@@ -114,6 +149,27 @@ export const CandidateForm = ({ data, onChange }: CandidateFormProps) => {
               value={data.contacts}
               onChange={(e) => updateField('contacts', e.target.value)}
               className="form-input"
+            />
+          </div>
+
+          <div className="form-field">
+            <label className="form-label">Готовность к выходу</label>
+            <input
+              type="text"
+              value={data.ready_to_work || ''}
+              onChange={(e) => updateField('ready_to_work', e.target.value)}
+              className="form-input"
+              placeholder="2 недели"
+            />
+          </div>
+
+          <div className="form-field full-width">
+            <label className="form-label">Краткое описание (summary)</label>
+            <textarea
+              value={data.summary || ''}
+              onChange={(e) => updateField('summary', e.target.value)}
+              rows={2}
+              className="form-textarea"
             />
           </div>
 
@@ -302,6 +358,7 @@ export const CandidateForm = ({ data, onChange }: CandidateFormProps) => {
             value={skillsString}
             onChange={(e) => handleSkillsChange(e.target.value)}
             className="form-input"
+            placeholder="Java, Spring, PostgreSQL, Docker"
           />
         </div>
 
@@ -312,6 +369,7 @@ export const CandidateForm = ({ data, onChange }: CandidateFormProps) => {
             value={languagesString}
             onChange={(e) => handleLanguagesChange(e.target.value)}
             className="form-input"
+            placeholder="Английский B2, Русский родной"
           />
         </div>
       </div>

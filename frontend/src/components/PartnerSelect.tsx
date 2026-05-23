@@ -23,7 +23,6 @@ export const PartnerSelect = ({ onSelect }: PartnerSelectProps) => {
         setLoading(false);
       }
     };
-
     load();
   }, []);
 
@@ -33,22 +32,24 @@ export const PartnerSelect = ({ onSelect }: PartnerSelectProps) => {
   };
 
   if (loading) {
-    return <div>Загрузка партнёров...</div>;
+    return <div className="partner-loading">Загрузка партнёров...</div>;
   }
 
   return (
     <div className="partner-select">
-      <label>Партнёр</label>
-
-      <select value={selectedId} onChange={handleChange}>
-        <option value="">Выберите партнёра</option>
-
-        {partners.map((p) => (
-          <option key={p.id} value={p.id}>
-            {p.name}
-          </option>
-        ))}
-      </select>
+      <label className="partner-label">
+        Партнёр<span className="required">*</span>
+      </label>
+      <div className="partner-select-wrapper">
+        <select value={selectedId} onChange={handleChange} className="partner-dropdown">
+          <option value="">Выберите партнёра</option>
+          {partners.map((p) => (
+            <option key={p.id} value={p.id}>
+              {p.name}
+            </option>
+          ))}
+        </select>
+      </div>
     </div>
   );
 };
