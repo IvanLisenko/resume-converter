@@ -4,8 +4,17 @@ import type {
   Partner, 
   ParseResponse, 
   GenerateResumeRequest,
-  ApiError 
+  ApiError,
+  CreatePartnerRequest,
+  User,
+  CreateUserRequest,
+  PartnerTemplate,
+  UpdatePartnerRequest,
+  UpdateUserRequest,
+  OperationLog,
+  TemplateVariable
 } from '../types/candidate';
+
 
 const API_BASE = '/api';
 
@@ -59,37 +68,24 @@ export const getCurrentUser = async () => {
 
 // ================= RESUME =================
 const mapBackendToFrontend = (raw: any): CandidateData => {
-  // Контакты
   const contactsParts = [];
   if (raw.contacts?.email) contactsParts.push(raw.contacts.email);
   if (raw.contacts?.phone) contactsParts.push(raw.contacts.phone);
   if (raw.contacts?.telegram) contactsParts.push(raw.contacts.telegram);
   
-  // ========== ОБРАЗОВАНИЕ (с поддержкой поля raw) ==========
   let educationStr = '';
-  
   if (raw.education) {
-    // Если массив
     if (Array.isArray(raw.education) && raw.education.length > 0) {
       educationStr = raw.education.map((edu: any) => {
-        // Если есть поле raw — берём его (как в твоём случае)
-        if (edu.raw) {
-          return edu.raw;
-        }
-        // Если есть стандартные поля
+        if (edu.raw) return edu.raw;
         const parts = [];
         if (edu.university) parts.push(edu.university);
         if (edu.program) parts.push(edu.program);
         if (edu.degree) parts.push(edu.degree);
         if (edu.period) parts.push(`(${edu.period})`);
-        if (edu.start_year && edu.end_year) parts.push(`${edu.start_year}-${edu.end_year}`);
-        else if (edu.start_year) parts.push(`с ${edu.start_year}`);
-        else if (edu.end_year) parts.push(`по ${edu.end_year}`);
         return parts.join(' ');
       }).join('\n');
-    }
-    // Если объект (не массив)
-    else if (typeof raw.education === 'object' && !Array.isArray(raw.education)) {
+    } else if (typeof raw.education === 'object' && !Array.isArray(raw.education)) {
       const edu = raw.education;
       if (edu.raw) {
         educationStr = edu.raw;
@@ -101,19 +97,11 @@ const mapBackendToFrontend = (raw: any): CandidateData => {
         if (edu.period) parts.push(`(${edu.period})`);
         educationStr = parts.join(' ');
       }
-    }
-    // Если строка
-    else if (typeof raw.education === 'string') {
+    } else if (typeof raw.education === 'string') {
       educationStr = raw.education;
     }
   }
   
-  // Если educationStr пустой, но есть candidate.education
-  if (!educationStr && raw.candidate?.education) {
-    educationStr = raw.candidate.education;
-  }
-  
-  // ========== ЯЗЫКИ (массив объектов → массив строк) ==========
   const languages: string[] = [];
   if (Array.isArray(raw.languages)) {
     raw.languages.forEach((lang: any) => {
@@ -127,7 +115,6 @@ const mapBackendToFrontend = (raw: any): CandidateData => {
     languages.push(raw.languages);
   }
   
-  // ========== НАВЫКИ (объект с primary/detailed → массив) ==========
   let skills: string[] = [];
   if (raw.skills) {
     if (Array.isArray(raw.skills)) {
@@ -141,10 +128,8 @@ const mapBackendToFrontend = (raw: any): CandidateData => {
       }
     }
   }
-  // Удаляем дубликаты
   skills = [...new Set(skills)];
   
-  // ========== ОПЫТ РАБОТЫ ==========
   const experience = (raw.experience || []).map((exp: any, idx: number) => ({
     id: idx,
     title: exp.title || exp.role || '',
@@ -156,6 +141,7 @@ const mapBackendToFrontend = (raw: any): CandidateData => {
     team: exp.team || '',
     stack_text: exp.stack_text || '',
     stack: Array.isArray(exp.stack) ? exp.stack : [],
+    level: exp.level || '',
   }));
   
   return {
@@ -188,11 +174,7 @@ export const uploadFile = async (file: File): Promise<CandidateData> => {
     console.warn('Парсинг с предупреждениями:', response.data.warnings);
   }
 
-  console.log('Raw data from backend:', response.data.resume);
-  const mapped = mapBackendToFrontend(response.data.resume);
-  console.log('Mapped data for form:', mapped);
-  
-  return mapped;
+  return mapBackendToFrontend(response.data.resume);
 };
 
 // ================= PARTNERS =================
@@ -212,36 +194,28 @@ const convertToBackendFormat = (candidate: CandidateData): GenerateResumeRequest
     if (emailMatch) email = emailMatch[0];
   }
   
-  // Образование: строка → массив объектов с полем raw
-  const education = [];
+  const education: any[] = [];
   if (candidate.education) {
     const lines = candidate.education.split('\n');
     for (const line of lines) {
       if (line.trim()) {
-        education.push({
-          raw: line.trim(),
-        });
+        education.push({ raw: line.trim() });
       }
     }
   }
   
-  // Языки: массив строк → массив объектов
   const languages = [];
   if (Array.isArray(candidate.languages)) {
     for (const lang of candidate.languages) {
       const match = lang.match(/^([^(]+)(?:\s*\(([^)]+)\))?$/);
       if (match) {
-        languages.push({
-          name: match[1].trim(),
-          level: match[2] || '',
-        });
+        languages.push({ name: match[1].trim(), level: match[2] || '' });
       } else {
         languages.push({ name: lang, level: '' });
       }
     }
   }
   
-  // Навыки: массив → primary (первые 15) + detailed (остальные)
   const allSkills = candidate.skills || [];
   const primarySkills = allSkills.slice(0, 15);
   const detailedSkills = allSkills.slice(15);
@@ -254,20 +228,15 @@ const convertToBackendFormat = (candidate: CandidateData): GenerateResumeRequest
       location: candidate.location || '',
       available_from: candidate.ready_to_work || '',
     },
-    contacts: {
-      phone,
-      email,
-    },
-    skills: {
-      primary: primarySkills,
-      detailed: detailedSkills,
-    },
+    contacts: { phone, email },
+    skills: { primary: primarySkills, detailed: detailedSkills },
     summary: candidate.summary || '',
     education,
     languages,
     experience: candidate.experience?.map(exp => ({
+      title: exp.title,
       role: exp.title,
-      level: '',
+      level: exp.level || '',
       role_title: exp.title,
       project_name: exp.project_name,
       project_heading: exp.project_name,
@@ -297,8 +266,6 @@ export const generateResume = async (
     resume: convertToBackendFormat(candidate),
   };
 
-  console.log('Generation request:', requestBody);
-
   const response = await apiClient.post('/v1/resumes/generate', requestBody, {
     responseType: 'blob',
   });
@@ -306,10 +273,134 @@ export const generateResume = async (
   return response.data;
 };
 
+// ================= ADMIN - PARTNERS =================
+export const getAllPartners = async (): Promise<Partner[]> => {
+  const response = await apiClient.get<Partner[]>('/v1/admin/partners');
+  return response.data;
+};
+
+export const createPartner = async (data: CreatePartnerRequest): Promise<Partner> => {
+  const response = await apiClient.post<Partner>('/v1/admin/partners', data);
+  return response.data;
+};
+
+export const deletePartner = async (partnerId: string): Promise<void> => {
+  await apiClient.delete(`/v1/admin/partners/${partnerId}`);
+};
+
+export const uploadTemplate = async (partnerId: string, file: File): Promise<void> => {
+  const formData = new FormData();
+  formData.append('file', file);
+  await apiClient.post(`/v1/admin/partners/${partnerId}/templates`, formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
+};
+
+// ================= ADMIN - USERS =================
+export const getAllUsers = async (): Promise<User[]> => {
+  const response = await apiClient.get<User[]>('/v1/admin/users');
+  return response.data;
+};
+
+export const createUser = async (data: CreateUserRequest): Promise<User> => {
+  const response = await apiClient.post<User>('/v1/admin/users', data);
+  return response.data;
+};
+
+export const updateUserRole = async (userId: string, role: 'RECRUITER' | 'ADMIN'): Promise<User> => {
+  const response = await apiClient.patch<User>(`/v1/admin/users/${userId}/role`, { role });
+  return response.data;
+};
+
+export const blockUser = async (userId: string): Promise<User> => {
+  const response = await apiClient.patch<User>(`/v1/admin/users/${userId}/block`);
+  return response.data;
+};
+
+export const unblockUser = async (userId: string): Promise<User> => {
+  const response = await apiClient.patch<User>(`/v1/admin/users/${userId}/unblock`);
+  return response.data;
+};
+// ================= ADMIN - PARTNER TEMPLATES =================
+export const getPartnerTemplates = async (partnerId: string): Promise<PartnerTemplate[]> => {
+  const response = await apiClient.get<PartnerTemplate[]>(`/v1/admin/partners/${partnerId}/templates`);
+  return response.data;
+};
+
+// ================= ADMIN - UPDATE PARTNER =================
+export const updatePartner = async (partnerId: string, data: UpdatePartnerRequest): Promise<Partner> => {
+  const response = await apiClient.patch<Partner>(`/v1/admin/partners/${partnerId}`, data);
+  return response.data;
+};
+
+// ================= ADMIN - UPDATE USER =================
+export const updateUser = async (userId: string, data: UpdateUserRequest): Promise<User> => {
+  const response = await apiClient.patch<User>(`/v1/admin/users/${userId}`, data);
+  return response.data;
+};
+
+// ================= ADMIN - OPERATION LOGS =================
+export const getOperationLogs = async (limit: number = 100): Promise<OperationLog[]> => {
+  const response = await apiClient.get<OperationLog[]>(`/v1/admin/operation-logs?limit=${limit}`);
+  return response.data;
+};
+
+// ================= TEMPLATE VARIABLES =================
+export const getTemplateVariables = async (): Promise<TemplateVariable[]> => {
+  const response = await apiClient.get<TemplateVariable[]>('/v1/template-variables');
+  return response.data;
+};
+
+// ================= SYSTEM HEALTH =================
+export const getHealth = async (): Promise<{ status: string }> => {
+  const response = await apiClient.get('/v1/health');
+  return response.data;
+};
+
+export const getReady = async (): Promise<{ status: string; database: string }> => {
+  const response = await apiClient.get('/v1/ready');
+  return response.data;
+};
+
+// ================= GET SINGLE PARTNER =================
+export const getPartner = async (partnerId: string): Promise<Partner> => {
+  const response = await apiClient.get<Partner>(`/v1/partners/${partnerId}`);
+  return response.data;
+};
+
+export const getAdminPartner = async (partnerId: string): Promise<Partner> => {
+  const response = await apiClient.get<Partner>(`/v1/admin/partners/${partnerId}`);
+  return response.data;
+};
+
+// ================= GET SINGLE USER =================
+export const getUser = async (userId: string): Promise<User> => {
+  const response = await apiClient.get<User>(`/v1/admin/users/${userId}`);
+  return response.data;
+};
 export default {
   login,
   getCurrentUser,
   uploadFile,
   getPartners,
   generateResume,
+  getAllPartners,
+  createPartner,
+  deletePartner,
+  uploadTemplate,
+  getAllUsers,
+  createUser,
+  updateUserRole,
+  blockUser,
+  unblockUser,
+  getPartnerTemplates,
+  updatePartner,
+  updateUser,
+  getOperationLogs,
+  getTemplateVariables,
+  getHealth,
+  getReady,
+  getPartner,
+  getAdminPartner,
+  getUser,
 };
