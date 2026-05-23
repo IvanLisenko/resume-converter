@@ -45,7 +45,7 @@ backend/
 
 ## Локальный запуск
 
-Основной способ запуска для разработки - через Docker Compose из корня репозитория. Compose-файл расположен в корне, чтобы единообразно запускать backend сейчас и frontend на следующих этапах:
+Основной способ запуска для разработки - через Docker Compose из корня репозитория. Compose-файл расположен в корне, чтобы единообразно запускать backend, frontend и инфраструктурные сервисы:
 
 ```bash
 docker compose up --build
@@ -53,10 +53,17 @@ docker compose up --build
 
 Команда поднимает:
 
+- frontend-приложение на Vite;
 - backend-сервис на FastAPI;
 - PostgreSQL;
 - volume для данных PostgreSQL;
 - volume для постоянного хранения шаблонов партнёров.
+
+Frontend будет доступен по адресу:
+
+```text
+http://localhost:5173
+```
 
 Backend будет доступен по адресу:
 
@@ -148,7 +155,7 @@ uvicorn app.main:app --reload
 
 ## Production-запуск
 
-Production-контур описан в корневом файле `docker-compose.prod.yml`. Он отличается от dev-контура тем, что backend запускается без `--reload`, без bind-mount исходного кода, без dev-зависимостей и от имени непривилегированного пользователя внутри контейнера.
+Production-контур описан в корневом файле `docker-compose.prod.yml`. Он отличается от dev-контура тем, что frontend отдаётся через nginx, backend запускается без `--reload`, без bind-mount исходного кода, без dev-зависимостей и от имени непривилегированного пользователя внутри контейнера.
 
 Подготовить env-файл:
 
@@ -199,6 +206,12 @@ docker compose --env-file backend/.env.production -f docker-compose.prod.yml ps
 
 ```bash
 curl http://localhost:8000/api/v1/health
+```
+
+Frontend будет доступен по адресу:
+
+```text
+http://localhost:3000
 ```
 
 Посмотреть логи:

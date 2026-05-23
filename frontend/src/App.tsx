@@ -5,8 +5,8 @@ import { MainPage } from './components/MainPage';
 import { getCurrentUser } from './services/api';
 
 function App() {
-  const [token, setToken] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [token, setToken] = useState<string | null>(() => localStorage.getItem('token'));
+  const [loading, setLoading] = useState(() => Boolean(localStorage.getItem('token')));
 
   useEffect(() => {
     const storedToken = localStorage.getItem('token');
@@ -18,8 +18,6 @@ function App() {
           setToken(null);
         })
         .finally(() => setLoading(false));
-    } else {
-      setLoading(false);
     }
   }, []);
 
