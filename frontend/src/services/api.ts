@@ -1,6 +1,7 @@
 import axios from 'axios';
 import type { 
   CandidateData, 
+  Experience,
   Partner, 
   ParseResponse, 
   GenerateResumeRequest,
@@ -14,6 +15,58 @@ import type {
   OperationLog,
   TemplateVariable
 } from '../types/candidate';
+
+type BackendEducation =
+  | string
+  | {
+      raw?: string;
+      university?: string;
+      program?: string;
+      degree?: string;
+      period?: string;
+    };
+
+type BackendLanguage = string | {
+  name?: string;
+  level?: string;
+};
+
+type BackendExperience = {
+  title?: string;
+  role?: string;
+  project_name?: string;
+  period?: string;
+  description?: string;
+  responsibilities?: string[];
+  achievements?: string[];
+  team?: string;
+  stack_text?: string;
+  stack?: string[];
+  level?: string;
+};
+
+type BackendResume = {
+  candidate?: {
+    full_name?: string;
+    position?: string;
+    level?: string;
+    location?: string;
+    available_from?: string;
+  };
+  contacts?: {
+    email?: string;
+    phone?: string;
+    telegram?: string;
+  };
+  skills?: string[] | {
+    primary?: string[];
+    detailed?: string[];
+  };
+  summary?: string;
+  education?: BackendEducation | BackendEducation[];
+  languages?: string | BackendLanguage[];
+  experience?: BackendExperience[];
+};
 
 
 const API_BASE = '/api';
@@ -67,8 +120,24 @@ export const getCurrentUser = async () => {
 };
 
 // ================= RESUME =================
-const mapBackendToFrontend = (raw: any): CandidateData => {
-  const contactsParts = [];
+const formatEducation = (education: BackendEducation): string => {
+  if (typeof education === 'string') {
+    return education;
+  }
+  if (education.raw) {
+    return education.raw;
+  }
+
+  const parts = [];
+  if (education.university) parts.push(education.university);
+  if (education.program) parts.push(education.program);
+  if (education.degree) parts.push(education.degree);
+  if (education.period) parts.push(`(${education.period})`);
+  return parts.join(' ');
+};
+
+const mapBackendToFrontend = (raw: BackendResume): CandidateData => {
+  const contactsParts: string[] = [];
   if (raw.contacts?.email) contactsParts.push(raw.contacts.email);
   if (raw.contacts?.phone) contactsParts.push(raw.contacts.phone);
   if (raw.contacts?.telegram) contactsParts.push(raw.contacts.telegram);
@@ -76,27 +145,9 @@ const mapBackendToFrontend = (raw: any): CandidateData => {
   let educationStr = '';
   if (raw.education) {
     if (Array.isArray(raw.education) && raw.education.length > 0) {
-      educationStr = raw.education.map((edu: any) => {
-        if (edu.raw) return edu.raw;
-        const parts = [];
-        if (edu.university) parts.push(edu.university);
-        if (edu.program) parts.push(edu.program);
-        if (edu.degree) parts.push(edu.degree);
-        if (edu.period) parts.push(`(${edu.period})`);
-        return parts.join(' ');
-      }).join('\n');
+      educationStr = raw.education.map(formatEducation).join('\n');
     } else if (typeof raw.education === 'object' && !Array.isArray(raw.education)) {
-      const edu = raw.education;
-      if (edu.raw) {
-        educationStr = edu.raw;
-      } else {
-        const parts = [];
-        if (edu.university) parts.push(edu.university);
-        if (edu.program) parts.push(edu.program);
-        if (edu.degree) parts.push(edu.degree);
-        if (edu.period) parts.push(`(${edu.period})`);
-        educationStr = parts.join(' ');
-      }
+      educationStr = formatEducation(raw.education);
     } else if (typeof raw.education === 'string') {
       educationStr = raw.education;
     }
@@ -104,7 +155,7 @@ const mapBackendToFrontend = (raw: any): CandidateData => {
   
   const languages: string[] = [];
   if (Array.isArray(raw.languages)) {
-    raw.languages.forEach((lang: any) => {
+    raw.languages.forEach((lang) => {
       if (typeof lang === 'string') {
         languages.push(lang);
       } else if (lang.name) {
@@ -130,7 +181,7 @@ const mapBackendToFrontend = (raw: any): CandidateData => {
   }
   skills = [...new Set(skills)];
   
-  const experience = (raw.experience || []).map((exp: any, idx: number) => ({
+  const experience: Experience[] = (raw.experience || []).map((exp, idx) => ({
     id: idx,
     title: exp.title || exp.role || '',
     project_name: exp.project_name || '',
@@ -174,7 +225,7 @@ export const uploadFile = async (file: File): Promise<CandidateData> => {
     console.warn('Парсинг с предупреждениями:', response.data.warnings);
   }
 
-  return mapBackendToFrontend(response.data.resume);
+  return mapBackendToFrontend(response.data.resume as unknown as BackendResume);
 };
 
 // ================= PARTNERS =================
@@ -188,13 +239,13 @@ const convertToBackendFormat = (candidate: CandidateData): GenerateResumeRequest
   let phone = '';
   let email = '';
   if (candidate.contacts) {
-    const phoneMatch = candidate.contacts.match(/[\+\d\s\-\(\)]{10,}/);
+    const phoneMatch = candidate.contacts.match(/[+\d\s()-]{10,}/);
     if (phoneMatch) phone = phoneMatch[0];
     const emailMatch = candidate.contacts.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/);
     if (emailMatch) email = emailMatch[0];
   }
   
-  const education: any[] = [];
+  const education: GenerateResumeRequest['resume']['education'] = [];
   if (candidate.education) {
     const lines = candidate.education.split('\n');
     for (const line of lines) {

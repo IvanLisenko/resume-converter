@@ -43,7 +43,7 @@ export const AdminPage = ({ onLogout }: AdminPageProps) => {
       ]);
       setPartners(partnersData);
       setUsers(usersData);
-    } catch (err) {
+    } catch {
       setError('Ошибка загрузки данных');
     } finally {
       setLoading(false);
@@ -51,7 +51,18 @@ export const AdminPage = ({ onLogout }: AdminPageProps) => {
   };
 
   useEffect(() => {
-    loadData();
+    Promise.all([
+      getAllPartners(),
+      getAllUsers(),
+    ])
+      .then(([partnersData, usersData]) => {
+        setPartners(partnersData);
+        setUsers(usersData);
+      })
+      .catch(() => {
+        setError('Ошибка загрузки данных');
+      })
+      .finally(() => setLoading(false));
   }, []);
 
   const handleCreatePartner = async (e: React.FormEvent) => {
@@ -62,7 +73,7 @@ export const AdminPage = ({ onLogout }: AdminPageProps) => {
       setSuccess('Партнёр создан');
       setNewPartner({ code: '', name: '', description: '' });
       loadData();
-    } catch (err) {
+    } catch {
       setError('Ошибка создания партнёра');
     }
   };
@@ -73,7 +84,7 @@ export const AdminPage = ({ onLogout }: AdminPageProps) => {
       await deletePartner(id);
       setSuccess('Партнёр удалён');
       loadData();
-    } catch (err) {
+    } catch {
       setError('Ошибка удаления');
     }
   };
@@ -88,7 +99,7 @@ export const AdminPage = ({ onLogout }: AdminPageProps) => {
       setSuccess('Шаблон загружен');
       setTemplateFile(null);
       setSelectedPartnerId('');
-    } catch (err) {
+    } catch {
       setError('Ошибка загрузки шаблона');
     }
   };
@@ -101,7 +112,7 @@ export const AdminPage = ({ onLogout }: AdminPageProps) => {
       setSuccess('Пользователь создан');
       setNewUser({ email: '', full_name: '', password: '', role: 'RECRUITER' });
       loadData();
-    } catch (err) {
+    } catch {
       setError('Ошибка создания пользователя');
     }
   };
@@ -115,7 +126,7 @@ export const AdminPage = ({ onLogout }: AdminPageProps) => {
       }
       setSuccess(user.is_active ? 'Пользователь заблокирован' : 'Пользователь разблокирован');
       loadData();
-    } catch (err) {
+    } catch {
       setError('Ошибка');
     }
   };
@@ -125,7 +136,7 @@ export const AdminPage = ({ onLogout }: AdminPageProps) => {
       await updateUserRole(userId, role);
       setSuccess('Роль изменена');
       loadData();
-    } catch (err) {
+    } catch {
       setError('Ошибка изменения роли');
     }
   };

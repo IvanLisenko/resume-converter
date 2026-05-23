@@ -6,8 +6,8 @@ import { AdminPage } from './components/AdminPage';
 import { getCurrentUser } from './services/api';
 
 function App() {
-  const [token, setToken] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [token, setToken] = useState<string | null>(() => localStorage.getItem('token'));
+  const [loading, setLoading] = useState(() => Boolean(localStorage.getItem('token')));
   const [userRole, setUserRole] = useState<string | null>(null);
 
   useEffect(() => {
@@ -15,8 +15,6 @@ function App() {
     if (storedToken) {
       getCurrentUser()
         .then((user) => {
-          console.log('🔍 Загружен пользователь:', user);
-          console.log('🔍 Роль пользователя:', user.role);
           setToken(storedToken);
           setUserRole(user.role);
         })
@@ -26,16 +24,12 @@ function App() {
           setUserRole(null);
         })
         .finally(() => setLoading(false));
-    } else {
-      setLoading(false);
     }
   }, []);
 
   const handleLogin = (newToken: string) => {
     setToken(newToken);
     getCurrentUser().then((user) => {
-      console.log('🔍 После входа пользователь:', user);
-      console.log('🔍 Роль после входа:', user.role);
       setUserRole(user.role);
     });
   };
@@ -57,9 +51,6 @@ function App() {
   if (!token) {
     return <Login onLogin={handleLogin} />;
   }
-
-  console.log('🔍 Текущий userRole:', userRole);
-  console.log('🔍 Показываем админку?', userRole === 'ADMIN');
 
   if (userRole === 'ADMIN') {
     return (
